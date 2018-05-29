@@ -1,9 +1,8 @@
 # modvarsel
 
 ## Description
-This R package proposes a computational way to tackle the problem of choosing between these three different regression models (parametric, semi-parametric and non parametric) including variables selection.
+This R package proposes a computational way to tackle the problem of choosing between different regression models (parametric, semi-parametric and non parametric) including variables selection.
 
-https://chavent.github.io/modvarsel/vignettes/modvarsel-intro.html
 
 ## Install
 
