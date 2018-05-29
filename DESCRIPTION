@@ -1,0 +1,29 @@
+Package: modvarsel
+Version: 0.0.0.0.9000
+Title: Implements a general methodology for model and variables selection
+Description: This package implements several regression methods 
+    (for instance linear regression, SIR and random forests) in a general
+    algorithm in order to determine which method (including 
+    variable selection step based on VI approach) is the most 
+    accurate (based on repeated learning/test samples approach).
+Authors@R: c(
+    person("Marie", "Chavent", ,"Marie.Chavent@u-bordeaux.fr", c("aut", "cre")),
+    person("Jerome", "Sarraco", ,"jerome.saracco@ensc.fr", "aut")
+    )
+Depends:
+    R (>= 3.1)
+Imports:
+    changepoint,
+    edrGraphicalTools,
+    randomForest,
+    pls,
+    glmnet,
+    graphics,
+    utils
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
