@@ -175,7 +175,7 @@ boxplot(res,
     main = "N = 50 replications")
 
 ## ----fig.width = 5, fig.height= 4----------------------------------------
-boxplot(res, measure = "r2",
+boxplot(res, ylim=c(0,220),
     type = "both", col = rgb(0,1,0,0.2), las = 2,
     main = "N = 50 replications")
 
