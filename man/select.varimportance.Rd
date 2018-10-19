@@ -9,9 +9,9 @@
 \arguments{
 \item{imp}{an object of class \code{varimportance}.}
 
-\item{cutoff}{if TRUE a change point criterion is used to define a cutoff value and select variables with mean VI above this cutoff.}
+\item{cutoff}{if TRUE covariates above the changepoint cutoff value are selected.}
 
-\item{nbsel}{if \code{cutoff=FALSE} the number of variables to be selected.}
+\item{nbsel}{the number of covariates to select (only if \code{cutoff=FALSE}).}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -21,7 +21,11 @@ an object of class \code{list} with two components.
 \item{indices}{a vector with the indices of the selected variables}
 }
 \description{
-Selection of the p' < p variables with the highest measure of importance (VI). The number p' is either defined by detecting a single change point position (in mean and variance) in the ordered VI values or by fixing a priori the number p' of selected variables.
+Chooses automaticaly the covariates relevant to predict the response variable.
+By default a change point criterion is used to define a cutoff value
+ and the covariates with mean VI above this cutoff value are selected.
+It is also possible to choose the number of covariates to select rather than
+using the changepoint cutoff value.
 }
 \examples{
 data("simus")

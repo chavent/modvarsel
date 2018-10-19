@@ -4,71 +4,89 @@ author: "Marie Chavent"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
+  #number_sections: true
   #pdf_document:
     toc: yes
+    
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Introduction to modvarsel}
   %\VignetteEncoding{UTF-8}
 ---
 
-Regression analysis studies the relationship between a $p$-dimensional covariable $X=(X_1,\ldots,X_p)$  and a numerical response variable $Y$.  Three models are considered in this package:
+Regression analysis studies the relationship between a $p$-dimensional covariable $X=(X_1,\ldots,X_p)$  and a numerical response variable $Y$.  Three models are considered here:
 
-- the linear parametric regression model :  $Y=\beta_0+\sum_{k=1}^p \beta_k X_k+\varepsilon$, where $\varepsilon$ is a random error. 
-- the nonparametric regression model:  $Y=f(X)+\varepsilon$. 
-- the single index semi-parametric model:  $Y=f(\sum_{k=1}^p \beta_k X_k)+\varepsilon$.
+- the linear parametric regression model :  $Y=\beta_0+\sum_{j=1}^p \beta_j X_j+\varepsilon$, where $\varepsilon$ is a random error. 
+- the nonparametric regression model:  $Y=f(X)+\varepsilon$.
+- the single index semiparametric model:  $Y=f(\sum_{j=1}^p \beta_j X_j)+\varepsilon$.
 
-with the following estimations methods:
+with the following estimations (regression) methods available in the package:
 
--	multiple linear regression for parametric estimation (denoted `linreg` hereafter),
--	SIR (sliced inverse regression) associated with kernel regression  for semiparametric estimation (denoted `sir` hereafter),
--	random forests  for non parametric estimation (denoted `rf` hereafter).
+-	multiple linear regression (`linreg`), principal component regression (`pcr`), partial least square regression (`plsr`), ridge regression (`ridge`) for parametric estimation,
+-	sliced inverse regression (`sir`) associated with kernel regression  for semiparametric estimation,
+-	random forests regression (`rf`)  for non parametric estimation.
 
-The methods of principal component regression (denoted `pcr`), partial least squares regression (denoted `plsr`) and ridge regression (denoted `ridge`) are also available in the package.
 
-The package __modvarsel__ has been developped to propose a computational way to tackle the problem of choosing between these different models including variables selection.
+The package __modvarsel__ implements a computational methodology to choose among different regression methods the best one to predict the response variable $Y$ with a selection of  $p' \leq p$ covariates strongly linked to $Y$.
+Usually the procedure of covariates selection is specific to the statistical method used to estimate the chosen model. Stepwise regression or lasso regression for instance select covariates in a parametric linear regression model. Here we use a generic methodology (working with any regression method) that simultaneously selects the best regression method and the most interesting covariates.
 
 The package implements two main functions:
 
-- the function `choicemod` implements an learning/test samples approach to determine which model (including variable selection step based on variable importance approach) is the most accurate.
+- the function `choicemod` implements an learning/test samples approach to determine which regression method (including covariates selection) is the most accurate.
 - the function `varimportance` computes for each variable a measure of importance by estimating the response variable with some perturbations of the covariates and computing the error due to these perturbations. 
 
+The methodology applies to any regression dataset. It is illustrated here:
+
+  - on simulated data generated from a fictitious linear model where only some covariates are relevant to predict the response variable.
+  - on a real experimental dataset where meat tenderness is the response variable and muscular biomarkers are covariates.
+  
 ## Simulated data
-Data have been simulated from the linear regression model $\textbf{Y}=\textbf{X}^T\beta+\varepsilon$ where $\textbf{X}$ is the input  matrix, $\textbf{Y}$ is the response vector, $\varepsilon$ is the errors vector and
+Data have been simulated from a linear regression model without intercept $Y=X^T\beta+\varepsilon$ where $X=(X_1,\ldots,X_p)$ the $p$-dimensional covariate, $Y$ is the response variable and $\varepsilon$ is the random error term. Here
 
-- $p$=15 predictors $X_j$ following a uniform distribution on $[0 ; 0.7]$,
-- $n$ independant error terms $\varepsilon_i$ and $\varepsilon_i \sim \mathbb{N}(0,1)$,
+- the $p$=15 covariates $X_j$ are independant and follow a uniform distribution on $[0 ; 0.7]$,
+- $\varepsilon$ is a standard normal error independant of $X$,
 - $\beta=(4,4,-3,-3,-2,0,\ldots,0)^T$.
+Only the five first covariates as then relevant here to predict $Y$.
 
-The object `simus`  contains a sample of a $n=200$ observations simulated with this parametric linear model. 
+The R dataset `simus` (available in the package) contains $n=200$ observations of the covariates and the response variable generated with this model. More precisely a matrix $\textbf{X}$ of dimension $200\times 15$ contains the observations of the covariates and a vector $\textbf{Y}$ of size 200 contains the observations of the response variable.
 
 ```{r message=FALSE}
 library(modvarsel)
 data(simus)
-X <- simus$X # matrix of input variables (predictors)
-Y <- simus$Y1 # output vector (response)
+X <- simus$X # matrix of covariates
+Y <- simus$Y1 # response vector
 ```
 
 
 ## Choice of the model
 
-The aim of the function `choicemod` is to evaluate in a proper way the mean square error (MSE) of the regression models estimated with several methods like `linreg`, `sir`, `rf`,... The models are defined either on all the input variables or on a selection of relevant variables.  A repeated learning/test samples approach is used for that purpose. More precisely the following procedure is repeated $N$ times:
+The aim of the function `choicemod` is to choose among several regression methods the best one to predict a response variable with an automatic selection of relevant covariates.
+In the package, the following regression methods are (for now) available:
 
-- split randomly the data sample to build a learning sample and a test sample
-- on the learning sample and for each model (linear parametric, semi-parametric and non parametric):
-    + compute the importance of the $p$ input variables.  The measure of importance of a variable is obtained by estimating the response variable with some perturbations of this variable and computing the error due to these perturbations. If the variable has an effect on $Y$, the random permutation of its values in the sample will affect the estimation of $Y$ and its measure of importance will take a high value. 
-    + select the $p' < p$ variables with the highest measure of importance (VI). The number $p'$ is either defined by detecting a single change point position (in mean and variance) in the ordered VI values or by fixing a priori the number $p'$ of selected variables.   
-    + estimate both the complete model with the $p$ input variables and the reduced model with the $p'$ selected variables. 
-    
-- on the test sample and for each estimated model compute the mean squared predicted error (`mse`) and the R2 coefficient (`r2`):
+  * multiple linear regression (`linreg`),
+  * principal component regression (`pcr`), 
+  * partial least square regression (`plsr`),
+  * ridge regression (`ridge`),
+  * sliced inverse regression (`sir`),
+  * random forests regression (`rf`).
 
-    +  for the reduced estimated model (built with the $p'$ selected variables)
-    +  for the complete estimated model (built with all the $p$ variables)
+The user selects a subset of regression methods and compares the mean square error (MSE) of each method (including covariates selection) given by the funcion `choicemod`. The function implements a computational learning/test approach to estimate the MSE values. The following procedure is repeats $M$ times:
+
+- split randomly the data sample to build a learning sample and a test sample,
+- with the learning sample and for each regression method:
+    + compute the importance of the $p$ covariates.  The measure of importance of a variable is obtained by estimating the response variable with some random perturbations of this variable and computing the error due to these perturbations. If the variable has an effect on $Y$, the random permutation of its values in the sample will affect the estimation of $Y$ and its measure of importance will take a high value. 
+    + select the $p' \leq p$ covariates with the highest measure of variable importance (VI). The number $p'$ is either defined by detecting a single change point position (in mean and variance) in the ordered VI values or by fixing a priori the number $p'$ of selected covariates.   
+    + estimate both the complete model with the $p$ covariates and the reduced model with the $p'$ selected covariates. 
     
+- with the test sample and for each regression method, perform the mean square error (test MSE) of the estimated reduced model and the test MSE of the estimated complete model.
+    
+This procedure is replicated $N$ times giving  $N$ values of test MSE for each regression method (with and without covariates selection). With this learning/test approach, models with different number of covariates can be compared, the one with the smaller test MSE being the best one. Parallel boxplots of test MSE  (two boxplots per regression method) are then used to visually select the most relevant method. 
+
+Let us apply this procedure to compare multiple linear regression, sliced inverse regression and random forests regression to predict the response variable and select the five relevant covariates in the simulated regression dataset.
 
 ```{r eval=FALSE}
 ?choicemod
-res <- choicemod(X,Y,method=c("linreg","sir","rf"), N =50, nperm=100)
+res <- choicemod(X, Y, method = c("linreg","sir","rf"), N = 50, nperm = 100)
 # The computation time a bit long. So we use the results stored in the the dataset simus
 res <- simus$res1
 ```
@@ -77,72 +95,71 @@ res <- simus$res1
 res <- simus$res1
 ```
 
-`res` is an object of class `choicemod` that contains all the relevant informations for further choice of a regression model. For instance the component `res$mse` (resp. `res$mse_all`)  contains the predicted mean squared errors of the $N=50$ reduced (resp. complete) estimated models.
+`res` is an object of class `choicemod` where results are stored in a list:
+
+  * `mse` (resp. `mse_all`) is the matrix of the test MSE for each replication (in row) and each regression method (in column) for the reduced models (resp. the complete models),
+  * `sizemod` is the matrix with the number of covariates selected in the reduced model for each replication (in row) and each regresion method (in column),
+  * `pvarsel` is the matrix with the occurrences (in percent) of selection of each covariates (in row) and each regression method (in column). 
+  
 
 ```{r}
-head(res$mse) # First 6 reduced models (over 50)
-head(res$mse_all) # First 6 complete models (over 50)
+head(res$mse) # test MSE of the reduced models (6 first iterations over 50)
+head(res$mse_all) # test MSE of the complete models (6 first iterations over 50)
 ```
 
-The component `res$r2` (resp. `res$r2_all`)  contains the R2 coefficients of the $N=50$ reduced (resp. complete) estimated models.
 
-```{r}
-head(res$r2) # First 6 reduced models (over 50)
-head(res$r2_all) # First 6 complete models (over 50)
-```
+Let us now describe the methods `boxplot` and `barplot` defined for the objects of class `choicemod`.
 
-Various methods are provided for the object `res` of class  `choicemod` such as `boxplot` and `barplot`.
+### Parallel boxplots of the MSE
 
-#### Parallel boxplots of the MSE
+The parallel boxplots below are built with the MSE values obtained at each replication of the procedure implemented in __choicemod__ (values in `res$mse`) for the reduced models (with covariates selection). These boxplots show that for the simulated data, the parametric  method `linreg` and the semiparametric  method `sir` outperform the non parametric method `rf`. This result is expected as the underlying simulation model is a parametric linear regression model. 
 
-The parallel boxplots below show that the `linreg` and the `sir` methods outperform the `rf` method for the reduced models.
 ```{r, fig.width = 5, fig.height= 4}
-boxplot(res, type="reduced", col=rgb(0,0,1,0.2), main="reduced models, N=50")
-```
-
-It is is also true with the complete models.
-```{r, fig.width = 5, fig.height= 4}
-boxplot(res,type="complete",col=rgb(0,0,1,0.2), main="complete models, N=50")
-```
-
-
-Moreover can see below that for `linreg` and `sir` the reduced models (two left boxplots)  are slighly better than the complete models (two right boxplots). The selection of variables seems to improve the mean square error both with `linreg` and with `sir`.
-
-```{r fig.width = 5, fig.height= 4}
 ?boxplot.choicemod
-boxplot(res, method = c("linreg", "sir"), 
-    type = "both", col = rgb(0,1,0,0.2), las = 2,
-    main = "N = 50 replications")
+boxplot(res, type = "reduced", col = rgb(0,0,1,0.2), 
+        ylab = "test MSE",
+        main = "Models with variables selection, N=50")
 ```
 
-The R2 coefficients can also be plotted instead of the MSE.
+This result remains true when complete models are used (no covariates selection).
+
+```{r, fig.width = 5, fig.height= 4}
+boxplot(res,type="complete",col=rgb(0,0,1,0.2), 
+        ylab = "test MSE",
+        main="Models without variables selection, N=50")
+```
+
+
+Moreover we can see below that both `linreg` and `sir` are slighly better with covariate selection (two left boxplots) than without (two right boxplots). The selection of variables seems to improve here the mean square error of the two regression methods.
+
 ```{r fig.width = 5, fig.height= 4}
-boxplot(res, method = c("linreg", "sir"), measure = "r2",
-    type = "both", col = rgb(0,1,0,0.2), las = 2,
+boxplot(res, method = c("linreg", "sir"), 
+    type = "both", ylab = "test MSE",
+    col = rgb(0,1,0,0.2), las = 2,
     main = "N = 50 replications")
 ```
 
 
-#### Barplots of the variables selected in the reduced models
-We know from the simulation scheme that the first five variables $X_1,\ldots,X_5$ are linked with $Y$. The following plots show the ability of the regression methods `linreg` and `sir` to select these 5 variables. 
-
-This first plot represents the proportion of selection of each variables with `linreg`. The proportion of selection of the 5 variables $X_1,\ldots,X_5$ is equal to 1. It means that these variables have been been selected at each replication. The others have never been selected.
+### Barplots of the selected covariates
+The barplot below is built with the occurences (in percent) of selection of each covariates with the regression method `linreg` (values in the first column of `res$pvarsel`). This barplot shows that the proportion of selection of the 5 covariates $X_1,\ldots,X_5$ is equal to 1. It means that these variables have been been selected at each replication. 
 
 ```{r fig.width = 4, fig.height= 3}
 ?barplot.choicemod
-barplot(res, method="linreg", type="varsel", las = 2, 
+barplot(res, method = "linreg", type = "varsel", las = 2, 
   main = "linreg", col = rgb(1,1,0,0.2))
 ```
 
 
-The next barplot shows that a reduced model of size 5 has been selected more than 40 times (over 50 replications).
+The next barplot is built with the occurences (in percent) of the number of variables selected with the `linreg` method (values in the first column of `res$sizemod`).  This barplot shows that a reduced model of size 5 has been selected more than 40 times (over $M=50$ replications).
 
 ```{r fig.width = 4, fig.height= 3}
-barplot(res, method="linreg", type="sizemod", las = 2, 
+barplot(res, method = "linreg", type = "sizemod", las = 2, 
   main = "linreg", col = rgb(0,1,1,0.2))
 ```
 
-The two next barplots show that `sir` selects more irrelevant variables (not linked with $Y$) than `linreg`.
+To sum-up the five first covariates are important to predict the response variable and the other covariates are almost never selected. This result is expected because we know from the simulation scheme that the first five variables $X_1,\ldots,X_5$ are linked with $Y$.
+
+The next barplots are obtained with the `sir` method. They show that `sir` selects more irrelevant variables (not linked with $Y$) than `linreg`.
 
 ```{r fig.width = 4, fig.height= 3}
 barplot(res, method="sir", type="varsel", las = 2, 
@@ -150,92 +167,97 @@ barplot(res, method="sir", type="varsel", las = 2,
 ```
 
 ```{r fig.width = 4, fig.height= 3}
-barplot(res, method="sir", type="sizemod", las = 2, 
+barplot(res, method = "sir", type = "sizemod", las = 2, 
   main = "sir", col = rgb(0,1,1,0.2))
 ```
 
-Finally the most appropriate model seems to be the parametric linear regression model. 
-
+Finally the most appropriate model seems to be the parametric linear regression model (as expected). 
 
 
 ## Identify and select useful covariates
 
-The function `varimportance` can now be used to indentify and select useful covariates in the regression model previously chosen with the function `choicemod`. The function `varimportance` computes for a given method (`linreg`, `sir` or `rf`) the importance of the $p$ covariates. Whatever the considered regression model and the available sample $s={(x_i,y_i), i=1,\ldots,n}$, the variable importance (VI) of the $j$th variable is calculated as follows:
-$$ VI_j=\frac{1}{n} \sum_{i=1}^n (y_i-\hat{y}_i^{(j)})^2,$$
-where $\hat{y}_i^{(j)}$ is the predicted value based on the sample where the values of the $j$th variable is randomly permuted.  If the variable has an effect on the response variable, the random permutation of its values will affect the estimation and its measure of importance will take a high value.
+The function `varimportance` computes for a given regression method (`linreg`, `pcr`, `plsr`, `ridge`, `sir`, `rf`) the importance of the $p$ covariates. Let us describe the general procedure. Let $S={(x_i,y_i ),i=1,…,n}$, be a sample of $n$ observations of the covariate $X$ and the response variable $Y$. The variable importance ($VI$) of a covariate $X_j$ is calculated as follows:
+$$ VI_j=\frac{1}{n} \sum_{i=1}^n (y_i-\hat{y_i}^{(j)})^2,$$
+where $\hat{y_i}^{(j)}$ is the prediction of the response variable when the observations of the $j$th covariate are randomly permuted in the sample $S$. If a covariate $X_j$ is important, the random permutation of its observations will affect the prediction of $Y$ and increase the error in $VI_j$. Covariates with higher $VI$ are then more important to predict the response variable. This procedure is replicated $nperm$ times
+($nperm$ random permutations) giving $nperm$ values of $VI$ for each covariate.
 
-In order to have a suitable idea of the importance of the variables, the procedure is replicated several times (i.e. for several random permuations). Several measure of importance are then obtained for each variable.
+Let us apply this procedure with the regression method `linreg` and $nperm=100$ replications to perform the importance of the $p=15$ covariates of the simulated dataset. 
 
 ```{r }
-imp <- varimportance(X,Y,method="linreg",nperm=100)
+imp <- varimportance(X, Y, method = "linreg", nperm = 100)
 ```
 
-`imp` is an object of class `varimportance` that contains the measures of importance of the variables (`imp$mat_imp`).
+`imp` is an object of class `varimportance` where results are stored in a list:
+
+  * `mat_imp` is the matrix of the $VI$ values for each replication (in row) and each covariate (un column).
+  * `base_imp` is the original mean square error. 
+
+```{r echo=FALSE}
+#options(scipen = 1, digits = 2)
+options(digits = 2)
+```
+
 
 ```{r}
-#importance of the variables for the first 6 permutations (over 100)
-knitr::kable(head(imp$mat_imp),digits=2) 
+imp$mat_imp[1:5,] # VI for the 5 first replications (over 100)
+colMeans(imp$mat_imp) # mean VI of the 15 covariates
+imp$base_imp #original MSE taken as baseline
 ```
 
-It is then easy to calculate the mean of each column.
-```{r}
-meanvi <- colMeans(imp$mat_imp) # mean importance
-knitr::kable(t(meanvi),digits=2)
-```
 
-The argument `ìmp$base_imp` the is the baseline value of importance  calculated as the mean squared error of the model estimated with the non perturbed data.
+The first 5  variables $X_1,\ldots,X_5$ have the highest mean $VI$ and are the only one with significantly greater $VI$ than the baseline MSE.
 
- ```{r}
-knitr::kable(imp$base_imp, digit=2) # baseline value of importance
-```
+Let us now describe the methods `plot` and `select` defined for the objects of class `varimportance`.
 
-The first 5  variables $X_1,\ldots,X_5$ have the highest mean VI and are the only one with significantly greater VI than the baseline VI value.
+### Plots of the importance of the covariates
 
-#### Plots of the importance of the variables
+The `plot` method provides two graphical representation: the parallel boxplots of the $VI$ of the covariates and the plot of the mean $VI$ of the covariates.
 
-A method `plot` is provided  for the object `imp` of class  `varimportance`. The `plot` method provides the parallel boxplots of the importance of the variables and the plot of the mean importance of the variables.
-
-The parallel boxplots is given below. 
+The parallel boxplots below are built with the $nperm=100$ measures of $VI$  of the $p=15$ covariates of the simulated dataset. The values availables in `imp$mat_imp`. 
 
 ```{r fig.width=5, fig.height=4}
 ?plot.varimportance
-plot(imp,choice="boxplot", col="lightgreen") #by default
+plot(imp, choice = "boxplot", col = "lightgreen",
+     main = "linreg method and nperm=100 permutations")
 ```
 
-The horizontal red line represents the baseline value of importance. The five variables $X_1,\ldots,X_5$ are obviously the only variables clearly above this red line.
+The horizontal red line represents the original MSE (given in `imp$vase_imp`). The five variables $X_1,\ldots,X_5$ are obviously the only covariates clearly above this red line.
 
-The plot of the mean importance of the variables is given below.
+The plot of the mean $VI$ of the covariates is given below.
 ```{r fig.width=5, fig.height=4}
-plot(imp,choice="meanplot", cutoff = FALSE)
+plot(imp, choice = "meanplot",
+     main = "mean of nperm=100 permutations")
 ```
 
-It is possible to visualize the same plot (the mean importance) with the variables ordered by decreasing order of importance and with a vertical green line  indicating a single change point position (in mean and variance).
+It is possible to visualize the same plot (the mean $VI$) with the variables ordered by decreasing order of importance and with a vertical green line  indicating a single change point position (in mean and variance).
 
 ```{r fig.width=5, fig.height=4}
-plot(imp,choice="meanplot", cutoff = TRUE)
+plot(imp, choice = "meanplot", order = TRUE, cutoff = TRUE,
+     main = "ordered mean VI")
 ```
 
 The change point criterion (green line) selects the same 5 variables.
 
-#### Selection of the important variables 
-A method `select`  is provided  for the object `imp` of class  `varimportance`. By default a change point criterion is used to define a cutoff value (green line on the plot aboce) and the variables with mean VI above this cutoff are selected.
+### Selection of the important covariates 
+The method `select`  chooses automaticaly 
+$p' \leq p$ covariates relevant to predict the response variable $Y$. By default a change point criterion is used to define a cutoff value (green line on the plot above) and the covariates with mean $VI$ above this cutoff value are selected.
 
 ```{r}
 ?select.varimportance
 select(imp, cutoff=TRUE) # by default
 ```
 
-Here the number of selected variables is not controled. It is also possible not to choose in input the number of selected variables. For instance above the 7 variables with the highest VI are selected.
+In that case the number of selected covariates is not controled. It is also possible to choose the number of covariates to select rather than using the changepoint cutoff value. For instance above the 7 covariates with the highest mean $VI$ are selected.
 
 ```{r}
 select(imp, cutoff=FALSE, nbsel=7)
 ```
 
 
-## Build the final model and make prediction
-We provide here the R code 
+## Estimate the final model and make prediction
+Once a regression method is chosen, the user may want to predict new data. We provide here some R code
 
-  - to build the final model with the $p'$ variables selected,
+  - to estimate the final model (using $p' \leq p$ selected covariates) with a specific regression methods (`linreg`, `sir` or `rf` for instance),
   - to predict the response variable for new observations. 
 
 The dataset `simus` contains a matrix of 10 new observations.
@@ -244,128 +266,164 @@ The dataset `simus` contains a matrix of 10 new observations.
 Xnew <- simus$Xnew
 ```
 
-First we select the columns of the $p'$ variables of the reduced model in $\textbf{X}$ and $\textbf{Xnew}$ .
+We want now to predict the response variable for these 10 new observations. We suppose that the five first covariates have been selected whatever the regression method.
+
 ```{r}
-sel <- select(imp, cutoff=TRUE)$indices
+#sel <- select(imp, cutoff=TRUE)$indices
+sel <- 1:5
 ```
 
 ```{r}
+# matrices with the selected covariates
 X <- X[, sel] 
-knitr::kable(head(X),digits=2) # First 6 lines of the reduced input matrix
-Xnew <- Xnew[, sel] # reduced new data matrix
-knitr::kable(Xnew,digits=2)
+Xnew <- Xnew[, sel] 
 ```
 
-#####Linear parametric model.
+###Multiple linear regression
+The parametric linear regression model is estimated here by multiple linear regression. 
 
-The R code to estimate the model and make predictions of the input data.
 ```{r}
-#estimate the linear model
+#estimate the linear model 
 m1 <- lm(Y~.,data = data.frame(X))
-#predict the input data
-Ypred <- predict(m1,newdata = data.frame(X))
 ```
 
-Plot of the true values versus the predictions.
+#### Plot of the true values versus the predictions
 ```{r fig.width=6, fig.height=6, out.width="70%"}
-#plot
+Ypred <- predict(m1,newdata = data.frame(X))
 plot(Y,Ypred, main = "linreg")
+abline(0,1)
 ```
 
-Predictions of the response for the new data.
+#### Predictions of the new observations
 ```{r}
-#predict the response of the 10 new observations
 newpred1 <- predict(m1,newdata = data.frame(Xnew))
-knitr::kable(t(newpred1),digits=2)
+newpred1
 ```
 
 
-#####Semi-parametric single index model.
+###Sliced inverse regression
 
-The R code to estimate the model has two steps:
+The single index semiparamtric model is estimated in two steps:
 
-- SIR to estimate $\beta$
-- Leave One Out cross valisation to tune the bandwidth for kernel regression.
+- sliced inverse regression estimate the parameter $\beta$ of the index,
+- kernel regression estimates the nonparametric link function. 
+
+The bandwidth for the kernel regression is tuned by LOO cross-validation.
 
 ```{r}
-# SIR
+# estimate beta
 beta <- edrGraphicalTools::edr(Y, X,
-        H = 10, K = 1, method = "SIR-I")$matEDR[, 1, drop = FALSE]
-# Single index
+        H = 10, K = 1, 
+        method = "SIR-I")$matEDR[, 1, drop = FALSE]
 index <- X %*% beta
 
-# Bandwith tuning
-hopt <- cv_bandwidth(index, Y, graph.CV=FALSE)$hopt
-
-# Prediction of the input data
-Ypred <-ksmooth(index, Y, kernel = "normal",
-        bandwidth = hopt, x.points = index)$y[rank(index)]
+# tune the bandwidth
+hopt <- cv_bandwidth(index, Y, graph.CV = FALSE)$hopt
 ```
 
-Plot of the true values versus the predictions.
+#### Plot of the true values versus the predictions
 
 ```{r fig.width=6, fig.height=6, out.width="70%"}
+Ypred <-ksmooth(index, Y, kernel = "normal",
+        bandwidth = hopt, x.points = index)$y[rank(index)]
 plot(Y,Ypred, main = "sir+kernel")
+abline(0,1)
 ```
 
 
-Predictions of the response for the new data.
+#### Predictions of new data
 
 ```{r}
 indexnew <- Xnew%*%beta
 newpred2 <- ksmooth(index, Y, kernel = "normal",
-        bandwidth = hopt, x.points = indexnew)$y[rank(indexnew)]
-knitr::kable(t(newpred2),digits=2)
+                    bandwidth = hopt, 
+                    x.points = indexnew)$y[rank(indexnew)]
+newpred2
 ```
 
 
 
-#####Non parametric model.
+### Random forests regression.
 
-The R code to estimate the model with random forests.
+The nonparametric model is estimated with random regression forests. The number of variables randomly sampled as candidates at each split is tuned with respect to Out-of-Baf error estimate.
 
 ```{r}
 #tune mtry
-bestmtry <-randomForest::tuneRF(X, Y,trace=FALSE,plot=FALSE)
+bestmtry <-randomForest::tuneRF(X, Y, trace = FALSE, plot  =FALSE)
 #build the forest
 m3 <- randomForest::randomForest(X, Y, mtry = bestmtry)
-# predict the input data
-Ypred <- predict(m3,newdata = X, type = "response")
 ```
 
-Plot of the true values versus the predictions
+#### Plot of the true values versus the predictions
 ```{r fig.width=6, fig.height=6, out.width="70%"}
-plot(Y,Ypred, main = "random forest")
+Ypred <- predict(m3, newdata = X, type = "response")
+plot(Y, Ypred, main = "random forest")
+abline(0,1)
 ```
 
-We observe a strong overfitting effect with `rf`.
+We observe a strong overfitting here.
 
-Predictions of the response for the new data.
+#### Predictions of new data
 
 ```{r}
-newpred3 <- predict(m3,newdata = Xnew, type = "response")
-knitr::kable(t(newpred3),digits=2)
+newpred3 <- predict(m3, newdata = Xnew, type = "response")
+newpred3
 ```
 
-###### Comparison of the predictions
+#### Comparison of the three vectors of predictions
 
 ```{r fig.width=7, fig.height=4}
-matplot(cbind(newpred1,newpred2,newpred3), ylab="predictions", 
+matplot(cbind(newpred1,newpred2,newpred3), ylab = "predictions", 
         xlab = "new observations",  cex=0.8)
-legend("bottomleft", inset=0.01, legend=c("linreg","sir","rf"), col=c(1:3), pch=c("1","2","3"), cex=0.8)
+legend("bottomleft", inset = 0.01, legend = c("linreg","sir","rf"), col = c(1:3), 
+       pch = c("1","2","3"), cex=0.8)
 ```
 
 ## A real data example
 
+We will now apply the same methodology (choice of a regression method including variables selection) with a real dataset.  This dataset describes 71 young bulls on 21 muscular biomarkers and a numerical variable measuring meat tenderness. The data have been obtained on animals coming from the EU FP6 Integrated Project ProSafeBeef (FOODCT-2006-36241).The aim here is to select among the 21 muscular biomarkers, the most predictive of the toughness of the meat.
+
+* The response variable (`WB55a14J`) is the warner-bratzler shear force measured on m. Semitendinosus (raw meat cooked at 55°C). It measures the toughness of the meat.
+* The 21 biomarkers are listed here: 
+
+    1. Metabolic enzymes: 
+        - malate dehydrogenase (`mdh1`), 
+        - $\beta$-enolase 3 (`eno3`), 
+        - lactate dehydrogenase chain B (`ldhb`),
+    2. Heat shock proteins: 
+        - $\alpha\beta$-crystallin (`abcrysta`), 
+        - HSP20 (`hsp20`), 
+        - HSP27 (`hsp27`), 
+        - HSP40 (`hsp40`), 
+        - HSP70-1A/B (`hsp701b`), 
+        - HSP70/Grp75 (`grp75`), 
+        - HSP70-8 (`hsp708`),
+    3. Oxidative proteins: 
+        - protein deglycase  (`DJ1`), 
+        - peroxiredoxin6 (`prdx6`), 
+        - superoxide dismutase (`sod1`),
+    4. Structural proteins: 
+        - $\alpha$-actinin 2 (`actine`), 
+        - MLC-1F (`mlc1f`), 
+        - Myosin heavy chain-I (`myhcI`), -II (`myhcII`) and -IIx (`myhcIIx`), 
+        - F-actin-capping protein subunit $\beta$ (`capz`), 
+        - myosin binding protein H (`mybpH`), 
+    5. Cell death, protein binding and proteolysis: 
+        - $\mu$-calpain (`microcal`).
+
+The R dataset `psbst` (available in the package) contains the data frame psbst$dat` with the description of the 71 bulls on the 21 biomarkers and the meat tenderness response variable. 
+
 ```{r}
 data("psbst")
-X <- psbst$dat[,-22] #  matrix of predictors
-Y <- psbst$dat$WB55a14J # response variable
+X <- psbst$dat[,-22] #  matrix of covariates (biomarkers)
+Y <- psbst$dat$WB55a14J # response variable (meat tenderness)
 ```
 
 ### Choice of the model
+Let us first use the function `choicemod` to compare multiple linear regression, sliced inverse regression and random forest regression.
 ```{r eval=FALSE}
-res <- choicemod(X, Y, N=50,nperm=100)
+res <- choicemod(X, Y, method = c("linreg", "sir", "rf"),
+                 N=50, nperm = 100)
 # The computation time a bit long. So we use the results stored in the the dataset psbst
 res <- psbst$res
 ```
@@ -374,103 +432,113 @@ res <- psbst$res
 res <- psbst$res
 ```
 
+#### Boxplots to compare the regression methods
 ```{r fig.width = 5, fig.height= 4}
-boxplot(res,
-    type = "both", col = rgb(0,1,0,0.2), las = 2,
-    main = "N = 50 replications")
+boxplot(res, type = "both", 
+    main = "N = 50 replications",
+    ylab = "test MSE", ylim=c(0,200), 
+    col = rgb(0,1,0,0.2), las = 2,)
 ```
+
+The regression methods perform as well with covariates selection than without (three left boxplots compared to the three boxplots on the right) and no regression method seems to outperform clearly. Let us see if the three regression methods
+
+  * select the same covariates, 
+  * select the same number of covariates.
+
+#### Barplots with informations about the selected covariates
+
+  *  With the `linreg` regression method
 
 ```{r fig.width = 5, fig.height= 4}
-boxplot(res, ylim=c(0,220),
-    type = "both", col = rgb(0,1,0,0.2), las = 2,
-    main = "N = 50 replications")
+barplot(res, method = "linreg", type = "varsel", 
+        main = "linreg", las = 2, col = rgb(1,1,0,0.2))
+
+barplot(res, method = "linreg", type = "sizemod",  
+        main = "linreg", las = 2, col = rgb(0,1,1,0.2))
 ```
 
-```{r fig.width = 6, fig.height= 5}
-barplot(res, method="linreg", type="varsel", las = 2, 
-  main = "linreg", col = rgb(1,1,0,0.2))
+  *  With the `sir` regression method
+  
+```{r fig.width = 5, fig.height= 4}
+barplot(res, method = "sir", type = "varsel",
+        main = "sir", las = 2, col = rgb(1,1,0,0.2))
+barplot(res, method = "sir", type = "sizemod",
+        main = "sir", las = 2, col = rgb(0,1,1,0.2))
 ```
 
-```{r fig.width = 6, fig.height= 5}
-barplot(res, method="linreg", type="sizemod", las = 2, 
-  main = "linreg", col = rgb(0,1,1,0.2))
+
+*  With the `rf` regression method
+
+```{r fig.width = 5, fig.height= 4}
+barplot(res, method = "rf", type = "varsel",
+        main = "rf", las = 2, col = rgb(1,1,0,0.2))
+barplot(res, method = "rf", type = "sizemod",
+        main = "rf", las = 2, col = rgb(0,1,1,0.2))
 ```
 
-```{r fig.width = 6, fig.height= 5}
-barplot(res, method="sir", type="varsel", las = 2, 
-  main = "sir", col = rgb(1,1,0,0.2))
-```
 
-```{r fig.width = 6, fig.height= 5}
-barplot(res, method="sir", type="sizemod", las = 2, 
-  main = "sir", col = rgb(0,1,1,0.2))
-```
+To conclude the `linreg` method seems to be, for this dataset, a reasonable choice. The predictive quality of `linreg` is very comparable to that of `sir` and `rf` (see the parallel boxplots above) and the size of the reduced models are smaller (less biomarkers as covariates) (see the barplots above).
 
-```{r fig.width = 6, fig.height= 5}
-barplot(res, method="rf", type="varsel", las = 2, 
-  main = "rf", col = rgb(1,1,0,0.2))
-```
+### Selection of important biomarkers
 
-```{r fig.width = 6, fig.height= 5}
-barplot(res, method="rf", type="sizemod", las = 2, 
-  main = "rf", col = rgb(0,1,1,0.2))
-```
-
-### Variables importance
-
-#### Linear regression
+The $VI$ of the 21 biomarkers are calculated with the `varimportance` function and the `linreg` regression method.
 
 ```{r eval=FALSE}
 imp1 <- varimportance(X,Y,method="linreg",nperm=200)
+# The computation time a bit long. So we use the results stored in the the dataset psbst
+imp1 <- psbst$imp1
 ```
 
 ```{r echo=FALSE}
 imp1 <- psbst$imp1
 ```
 
-```{r fig.width=6, fig.height=5}
-plot(imp1,choice="boxplot", col="lightgreen") #by default
+The boxplot of the $VI$ values show that 10 biomarkers (green boxplot) are above the red line (the original baseline MSE). 
+```{r fig.width=5, fig.height=4}
+colsel <- rep("white", 21)
+colsel[c(2:8,12,17,20)] <- "lightgreen"
+plot(imp1, choice = "boxplot", 
+     main = "linreg", col = colsel) 
 ```
 
-
-```{r fig.width=6, fig.height=5}
-plot(imp1,choice="meanplot", cutoff = TRUE)
+The plot of the ordered mean $VI$ values shows that the cutoff value defined by detecting a single change point position (in mean and variance) (the horizontal green line) selects 2 more biomarkers.
+```{r fig.width=5, fig.height=4}
+plot(imp1, choice = "meanplot", 
+     order = TRUE, cutoff = TRUE, main="linreg")
 ```
 
-#### SIR
+Finaly, the expert of the domain decides to select only the 6 best biomarkers.
+
+```{r}
+select(imp1, nbsel = 6)$var
+```
+
+The importance of the variables with the two other regression methods (`sir` and `rf`) are plotted below.
 
 ```{r eval=FALSE}
-imp2 <- varimportance(X,Y,method="sir",nperm=200)
+imp2 <- varimportance(X, Y, method = "sir", nperm = 200)
+imp3 <- varimportance(X, Y, method = "rf", nperm = 200)
+# The computation time a bit long. So we use the results stored in the the dataset psbst
+imp2 <- psbst$imp2
+imp3 <- psbst$imp3
 ```
 
 ```{r echo=FALSE}
 imp2 <- psbst$imp2
-```
-
-```{r fig.width=6, fig.height=5}
-plot(imp2,choice="boxplot", col="lightgreen") #by default
-```
-
-
-```{r fig.width=6, fig.height=5}
-plot(imp2,choice="meanplot", cutoff = TRUE)
-```
-
-
-#### Random forests
-
-```{r eval=FALSE}
-imp3 <- varimportance(X,Y,method="rf",nperm=200)
-```
-
-```{r echo=FALSE}
 imp3 <- psbst$imp3
 ```
 
-```{r fig.width=6, fig.height=5}
-plot(imp3,choice="boxplot", col="lightgreen") #by default
+```{r fig.width=5, fig.height=4}
+plot(imp2, choice = "boxplot", 
+     col = "lightgreen", main = 'sir') 
+plot(imp2, choice = "meanplot", 
+     order = TRUE, cutoff = TRUE, main = 'sir')
 ```
 
-```{r fig.width=6, fig.height=5}
-plot(imp3,choice="meanplot", cutoff = TRUE)
+
+```{r fig.width=5, fig.height=4}
+plot(imp3 ,choice = "boxplot", 
+     col = "lightgreen", main = 'rf') 
+plot(imp3, choice = "meanplot", 
+     order = TRUE, cutoff = TRUE, main = 'rf')
 ```

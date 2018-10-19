@@ -1,13 +1,10 @@
-######################
-# Ridge
-######################
 varimp_ridge <- function(X, Y, nrep=10){
   X <- as.matrix(X)
 
   #ridge linear regression on the initial dataset
   cvfit <- glmnet::cv.glmnet(X, Y, family = "gaussian", alpha=0,
              standardize = FALSE, nfolds = 10, grouped=FALSE)
-  Ypred <- predict(cvfit,X, s = "lambda.min")
+  Ypred <- stats::predict(cvfit,X, s = "lambda.min")
   base_mse <- mean((Y-Ypred)^2)
 
   # Repetitions of VI measures for each variable
@@ -17,13 +14,14 @@ varimp_ridge <- function(X, Y, nrep=10){
   colnames(mat_mse) <- colnames(X)
 
   for (r in 1:nrep) {
+    cat("Replication ", r," on ", nrep, fill = TRUE)
     for (j in 1:p){
       Xperm <- X
       Xperm[,j] <- Xperm[sample(1:n),j]
 
       cvfit <- glmnet::cv.glmnet(Xperm, Y, family = "gaussian", alpha=0,
              standardize = FALSE, nfolds = 10, grouped=FALSE)
-      Ypred <- predict(cvfit,X, s = "lambda.min")
+      Ypred <- stats::predict(cvfit,X, s = "lambda.min")
       mat_mse[r,j] <- mean((Y-Ypred)^2)
 
     }

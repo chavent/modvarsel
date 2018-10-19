@@ -1,14 +1,11 @@
 Package: modvarsel
-Version: 0.0.0.0.9000
-Title: Implements a general methodology for model and variables selection
-Description: This package implements several regression methods 
-    (for instance linear regression, SIR and random forests) in a general
-    algorithm in order to determine which method (including 
-    variable selection step based on VI approach) is the most 
-    accurate (based on repeated learning/test samples approach).
+Version: 0.0.1
+Title: Implements a computational methodology for model and variables selection
+Description: This package implements a methodology to choose among several regression methods the best one to predict a numerical response variable and select simultaneously the most interesting covariates. 
 Authors@R: c(
     person("Marie", "Chavent", ,"Marie.Chavent@u-bordeaux.fr", c("aut", "cre")),
-    person("Jerome", "Sarraco", ,"jerome.saracco@ensc.fr", "aut")
+    person("Jerome", "Sarraco", ,"jerome.saracco@ensc.fr", "aut"),
+    person("Marie-Pierre", "Ellies", ,"marie-pierre.ellies@agro-bordeaux.fr", "aut")
     )
 Depends:
     R (>= 3.1)

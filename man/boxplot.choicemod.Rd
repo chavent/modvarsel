@@ -2,24 +2,32 @@
 % Please edit documentation in R/boxplot.choicemod.R
 \name{boxplot.choicemod}
 \alias{boxplot.choicemod}
-\title{Boxplots for models comparison}
+\title{Parrallel boxplots of choicemod}
 \usage{
-\method{boxplot}{choicemod}(res, method = NULL, measure = "mse",
-  type = "reduced", ...)
+\method{boxplot}{choicemod}(res, method = NULL, type = "reduced",
+  ylab = NULL, ...)
 }
 \arguments{
 \item{res}{an object of class \code{choicemod}.}
 
-\item{method}{if NULL, all the methods in \code{res$method} are plotted. Otherwise a subset of these methods (among \code{"linreg"}, \code{"sir"}, \code{"rf"}).}
+\item{method}{if NULL, all the methods in \code{res$method} are plotted.
+Otherwise a subset of these methods (\code{"linreg"}, \code{"sir"}, \code{"rf"}, \code{"pcr"},
+\code{"plsr"}, \code{"ridge"}).}
 
-\item{measure}{the criterion to be plotted. This should be \code{"mse"} (by default) or \code{"r2"}.}
+\item{type}{this should be \code{"reduced"} (boxplot for reduced estimated models),
+\code{"complete"} (boxplot for complete estimated models) or \code{"both"}.
+ By default,  \code{type="reduced"}.}
 
-\item{type}{this should be \code{"reduced"} (boxplot for reduced estimated models),  \code{"complete"} (boxplot for complete estimated models) or \code{"both"}. By default,  \code{type="reduced"}.}
+\item{ylab}{Y axis label.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
 \description{
-Parallel boxplots of the results (mean square errors or R2 coefficients)  obtained for complete models (with all the input variables) and for reduced models (with a selection of relevant variables) estimated by the function \code{choicemod}.
+The parallel boxplots are built with the MSE values obtained at each replication
+of the procedure implemented in \link{choicemod}. At each replication, each regression
+method estimates both the reduced model (with covariates selection)
+and the complete models (without covariates selection). The boxplots represent the
+test mean square errors (performed on test samples) of each regression method including (or not) covariates selection.
 }
 \examples{
 data("simus")
@@ -29,7 +37,6 @@ res$method
 boxplot(res, type="reduced", col="gold", main="Models with variables selection, N=10")
 boxplot(res,type="complete",col=rgb(0,0,1,0.2), main="Models with all the variables, N=10")
 boxplot(res,type="both", col = "aquamarine", las = 2, main = "N = 10 replications")
-boxplot(res,method=c("linreg","sir"), measure="r2", col=rgb(0,1,0,0.2))
 
 }
 \seealso{

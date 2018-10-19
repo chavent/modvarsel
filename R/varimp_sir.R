@@ -1,6 +1,3 @@
-############
-# SIR
-############
 
 #question : ne faudrait-il pas tuner la fenêtre en dehors de la boucle des réplications comme en RF ?
 #tester que Y est bien un vecteur
@@ -49,10 +46,19 @@ varimp_sir <- function(X, Y, nrep=10){
   list(mat_mse=mat_mse, base_mse  =base_mse)
 }
 
-#===========================================
-# Tune bandwidth for Kernel Regression Smoother
-#============================================
-#' @export
+
+#' Tune bandwidth
+#'
+#' \code{barplot} tunes by LOO cross-validation
+#' the bandwidth for Kernel Regression Smoother.
+#'
+#'@param x a vector with the input values
+#'@param y a vector with the output values
+#'@param hmin the minimum bandwidth
+#'@param hmax the maximum bandwidth
+#'@param nbh size of the grid of bandwidth
+#'@param graph.CV If TRUE plot the CV MSE against bandwidth values
+#'@export
 #'
 cv_bandwidth <- function(x, y, hmin=(max(x)-min(x))/20,
                 hmax=(max(x)-min(x))/2, nbh=25,

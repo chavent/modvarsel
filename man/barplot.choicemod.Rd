@@ -2,23 +2,33 @@
 % Please edit documentation in R/barplot.choicemod.R
 \name{barplot.choicemod}
 \alias{barplot.choicemod}
-\title{Barplots of the selected variables}
+\title{Barplots of choicemode}
 \usage{
-\method{barplot}{choicemod}(res, method = "linreg", type = "varsel", ...)
+\method{barplot}{choicemod}(res, method = "linreg", type = "varsel",
+  xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{res}{an object of class \code{choicemod}.}
 
-\item{method}{one of the methods in \code{res$method} (among \code{"linreg"}, \code{"sir"}, \code{"rf"},
-\code{"pcr"}, \code{"plsr"}, \code{"ridge"}).}
+\item{method}{a regression methods in \code{res$method} ( \code{"linreg"}, \code{"sir"}, \code{"rf"}, \code{"pcr"},
+\code{"plsr"}, \code{"ridge"}).}
 
-\item{type}{this should be \code{"varsel"} (proportion of selection each variable in the reduced model).
-or \code{"modsize"} (frequency of the size of each reduced model).}
+\item{type}{if \code{"varsel"} the occurences (in percent)
+of selection of each covariates are plotted.
+If \code{"modsize"} the occurences (in percent) of
+the sizes of the reduced models are plotted.}
+
+\item{xlab}{X axis label  ("size of the reduced model" by default
+when when \code{type="modsize"}).}
+
+\item{ylab}{Y axis label ("percent" by default).}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
 \description{
-Barplots with informations about the variables selected in the reduced models estimated by the function \code{choicemod}.
+This function gives two types of barplots for a given regression method: the barplot of the occurences (in percent)
+of selection of each covariates  and the barplot
+of the occurences (in percent) of the number of selected covariates (size of the reduced model).
 }
 \examples{
 data("simus")

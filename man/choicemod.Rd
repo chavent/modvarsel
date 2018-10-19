@@ -8,84 +8,75 @@ choicemod(X, Y, method = c("linreg", "sir", "rf"), N = 20,
   prop_train = 0.8, nperm = 50, cutoff = TRUE, nbsel = NULL)
 }
 \arguments{
-\item{X}{the input numerical matrix of dimension nxp.}
+\item{X}{a numerical matrix containing the \code{p} variables in the model.}
 
-\item{Y}{the output numerical vector of size n.}
+\item{Y}{a numerical response vector.}
 
-\item{method}{a vector with the methods.
-chosen among \code{"linreg"}, \code{"sir"}, \code{"rf"}, \code{"pcr"},
-\code{"plsr"}, \code{"ridge"}.}
+\item{method}{a vector with the names of the chosen regression methods
+(\code{"linreg"}, \code{"sir"}, \code{"rf"}, \code{"pcr"}, \code{"plsr"}, \code{"ridge"}).}
 
-\item{N}{the number of replications i.e. the number of ramdom leaning/test
-samples used to evaluate MSE of the chosen model.}
+\item{N}{the number of replications (the number of ramdom leaning/test
+samples) to estimate the MSE values.}
 
 \item{prop_train}{a value between 0 and 1 with the proportion of
-observations in the \code{N} training samples.}
+observations in the training samples.}
 
-\item{nperm}{the number of repetitions of random perturbations of the
-predictors used to calculate the importance of the variables (VI values).}
+\item{nperm}{the number of random permutations to perform the importance of the covariates (VI).}
 
-\item{cutoff}{if TRUE the variables are selected automatically and the number
+\item{cutoff}{if TRUE the covariates are selected automatically and the number
 of selected variables is unknown. If \code{cutoff=FALSE} the \code{nbsel}
  best variables are selected.}
 
-\item{nbsel}{the number of selected variables. Active only if
+\item{nbsel}{the number of selected covariates. Active only if
 \code{cutoff=FALSE}.}
 }
 \value{
-An object with S3 class "choicemod" and with the following components:
-\item{mse}{ a matrix of dimension \code{N} times \code{length(methods)}.
-Each colum  gives the  \code{N} values of MSE calculated on the test samples.
-Here only the selected variables are considered in the models estimated on
-the training samples.}
-
-\item{mse_all}{a matrix of dimension \code{N} times \code{length(methods)}.
-Each colum  gives the  \code{N} values of MSE calculated on the test samples.
-Here all the variables are considered in the models estimated on the
-training samples.}
-
-\item{sizemod}{a matrix of dimension \code{N} times  \code{length(methods)}.
-Each column gives the number of variables selected at each replication.}
-
-\item{pvarsel}{a matrix of dimension \code{p} times \code{length(methods)}.
- Each column gives the proportion of selection of the input variables among
-  the \code{N} replications.}
+An object with S3 class "choicemod" and the following components:
+\item{mse}{a matrix of dimension \code{N} times \code{length(methods)}
+ with the values of MSE calculated with the \code{N} test samples (in row)
+ and each regression method (in column) estimating the reduced models (with covariate selection)
+  on the training samples.}
+\item{mse_all}{a matrix of dimension \code{N} times \code{length(methods)}
+ with the values of MSE calculated with the \code{N} test samples (in rows)
+ and each regression method (in columns) estimating the complete models (no covariate selection)
+  on the training samples.}
+\item{sizemod}{a matrix of dimension \code{N} times  \code{length(methods)}
+with the number of covariates selected in the reduced model for each replication (in row)
+and each regresion method (in column).}
+\item{pvarsel}{a matrix of dimension \code{p} times \code{length(methods)}
+with the occurrences (in percent) of selection of each covariates (in row)
+and each regression method (in column).}
 }
 \description{
-This function performs the mean squared predicted error (MSE) of parametric,
+This function estimates the mean squared error (MSE) of parametric,
 semi-parametric or non parametric regression models (including possibly
-variables selection)  using a repeated learning/test samples approach.
+covariates selection)  using a repeated learning/test samples approach.
 The models are estimated with different methods (chosen by the user) for
 comparison purpose. The following methods (with and without variables
 selection) are available: multiple linear regression (\code{linreg}),
 sliced inverse regression associated with kernel regression (\code{sir}),
-random forests (\code{rf}), principal components regression  (\code{pcr}),
+random forests regression (\code{rf}), principal components regression  (\code{pcr}),
 partial least squares regression (\code{plsr}), ridge regression (\code{ridge}).
-The procedure for variables selection is the same for all the
-estimation methods. The importance of each variable is measured  by
-estimating the response variable with some perturbations of the covariates
-and computing the error due to these perturbations. Then the variables
-are selected automatically using an approach  to detect a single change
-point position (in mean and variance) in the ordered sequence of VI’s values.
- It is also possible to choose the number of selected variables.
+The procedure for covariates selection is the same for all the
+estimation methods and is based on variable importance (VI) obtained via
+repeated random perturbations of the covariates.
 }
 \details{
-The parameters of the methods (\code{sir}, \code{pcr},
- \code{plsr} and \code{ridge}) are tuned
- on the training samples. The bandwidth for Kernel Regression Smoother is
- tuned by leave one out cross validation. The number of components retained
- in the model for \code{pcr} and \code{plsr} is tuned as follows: for
- each possible number of components, the root mean square error (RMSE) is calculated
- vy 5-fold cross validation  and the number of components is selected by detecting
- a change point position (in mean and variance).
-The parameter \code{mtry} for random forests is not tuned and fixed to p/3.
- The number of trees is not tuned and fixed to \code{ntree=300}.
+The only method with no parameter to tune is \code{"linreg"}.
+The parameters of the methods \code{sir}, \code{pcr}, \code{plsr} and \code{ridge}
+are tuned on the training samples. The bandwidth for Kernel Regression Smoother is
+ tuned by leave one out cross validation. The number of components for \code{pcr} and \code{plsr} is
+ tuned as follows: for each possible number of components, the root mean square error (RMSE) is calculated
+ via 5-fold cross validation  and the number of components is selected by detecting
+ a change point position (in mean and variance). The parameter \code{mtry} for random forests
+ regression is not tuned and is fixed to p/3. The number of trees is not tuned and is fixed to \code{ntree=300}.
 }
 \examples{
 data(simus)
 X <- simus$X
-Y <- simus$Y
+Y <- simus$Y1
 #res <- choicemod(X,Y,method=c("linreg","sir"), N = 50, nperm = 100)
+#The computation time a bit long. So the results have been stored.
 res <- simus$res1
 boxplot(res)
 

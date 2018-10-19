@@ -8,7 +8,7 @@ varimp_plsr <- function(X, Y, nrep=10){
   # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
   rmsep <- sqrt(model$validation$PRESS/n)
   ncomp <- find.cpt(rmsep)
-  Ypred <- as.vector(predict(model, data.frame(X),
+  Ypred <- as.vector(stats::predict(model, data.frame(X),
     ncomp=ncomp))
   base_mse <- mean((Y - Ypred)^2)
 
@@ -22,13 +22,12 @@ varimp_plsr <- function(X, Y, nrep=10){
     for (j in 1:p){
       Xperm <- X
       Xperm[,j] <- Xperm[sample(1:n),j]
-
       model <- pls::plsr(Y~., data = data.frame(Xperm),
         validation = "CV", scale=TRUE)
       # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
       rmsep <- sqrt(model$validation$PRESS/n)
       ncomp <- find.cpt(rmsep)
-      Ypred <- as.vector(predict(model, data.frame(Xperm),
+      Ypred <- as.vector(stats::predict(model, data.frame(Xperm),
         ncomp=ncomp))
       mat_mse[r,j] <- mean((Y - Ypred)^2)
     }

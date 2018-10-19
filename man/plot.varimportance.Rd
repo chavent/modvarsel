@@ -2,30 +2,44 @@
 % Please edit documentation in R/plot.varimportance.R
 \name{plot.varimportance}
 \alias{plot.varimportance}
-\title{Plots of the importance of the variables}
+\title{Plots of the importance of the covariates}
 \usage{
-\method{plot}{varimportance}(x, choice = "boxplot", cutoff = FALSE, ...)
+\method{plot}{varimportance}(x, choice = "boxplot", order = FALSE,
+  xlab = NULL, ylab = NULL, cutoff = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{varimportance}.}
 
-\item{choice}{this should be "boxplot" (for parallel boxplots of the importance of the variables), "meanplot" (for the plot of the mean importance of the variables).}
+\item{choice}{if "boxplot" the parallel boxplots of the VI is provided.
+If "meanplot" the plot of the mean VI is provided.}
 
-\item{cutoff}{if TRUE, the variables are ordered by decreasing mean importance and a single change point position (in mean and variance) is indicated by a green vertical line.}
+\item{order}{if TRUE, the mean VI values are plotted by decreasing order.}
+
+\item{xlab}{X axis label.}
+
+\item{ylab}{Y axis label.}
+
+\item{cutoff}{if TRUE a vertical green line is plotted to give a
+single change point position (only when \code{order=TRUE})}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
 \description{
-This function provides the parallel boxplots of the importance of the variables (VI) and the plot of the mean importance of the variables. The baseline value of importance is indicated by a red horizontal line for comparison purpose. If \code{cutoff=TRUE} the variables are ordered by decreasing mean importance and a single change point position (in mean and variance) is indicated by a green vertical line.
+This funtion provides two graphical representation:
+the parallel boxplots of the variable importance (VI)  of the covariates and
+the plot of the mean VI of the covariates.
+}
+\details{
+The original MSE is indicated by a red horizontal line.
 }
 \examples{
 data("simus")
 X <- simus$X
 Y <- simus$Y1
 imp <- varimportance(X,Y,method="linreg",nperm=8)
-plot(imp,choice="boxplot", col="lightgreen") #by default
-plot(imp,choice="meanplot", cutoff = FALSE)
-plot(imp,choice="meanplot", cutoff = TRUE)
+plot(imp,choice="boxplot", col="lightgreen")
+plot(imp,choice="meanplot")
+plot(imp,choice="meanplot", order = TRUE, cutoff = TRUE)
 
 }
 \seealso{

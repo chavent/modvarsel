@@ -1,16 +1,26 @@
-#' @export
+#' Variables selection
 #'
+#' \code{select} is a generic function for selection of covariates
+#'in a prediction model.
+#' @param imp an object with the importance of variables.
+#' @param ... additional arguments.
+#' @export
 select <- function(imp,...) {
   UseMethod("select")
 }
 
+
 #' Automatic selection of variables
 #'
-#' Selection of the p' < p variables with the highest measure of importance (VI). The number p' is either defined by detecting a single change point position (in mean and variance) in the ordered VI values or by fixing a priori the number p' of selected variables.
+#' Chooses automaticaly the covariates relevant to predict the response variable.
+#' By default a change point criterion is used to define a cutoff value
+#'  and the covariates with mean VI above this cutoff value are selected.
+#' It is also possible to choose the number of covariates to select rather than
+#' using the changepoint cutoff value.
 #'
 #' @param imp an object of class \code{varimportance}.
-#' @param cutoff if TRUE a change point criterion is used to define a cutoff value and select variables with mean VI above this cutoff.
-#' @param nbsel if \code{cutoff=FALSE} the number of variables to be selected.
+#' @param cutoff if TRUE covariates above the changepoint cutoff value are selected.
+#' @param nbsel  the number of covariates to select (only if \code{cutoff=FALSE}).
 #' @param \dots further arguments passed to or from other methods.
 #'
 #' @return an object of class \code{list} with two components.
@@ -29,9 +39,6 @@ select <- function(imp,...) {
 #'
 #' @export
 #'
-#===========================================
-# Automatic selection of variables
-#===========================================
 select.varimportance <- function(imp, cutoff = TRUE, nbsel = NULL, ...) {
 
   if (!(cutoff %in% c(TRUE, FALSE)))
@@ -45,6 +52,7 @@ select.varimportance <- function(imp, cutoff = TRUE, nbsel = NULL, ...) {
          !(all.equal(nbsel, as.integer(nbsel))))
       stop("\"nbsel\" must be a positive integer
         between 1 and p", call. = FALSE)
+  if (!is.null(nbsel)) cutoff <- FALSE
 
   p <- ncol(imp$mat_imp)
   imp_mean <- apply(imp$mat_imp,2,mean)

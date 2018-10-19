@@ -7,49 +7,39 @@
 varimportance(X, Y, method = "linreg", nperm = 10)
 }
 \arguments{
-\item{X}{the input numerical matrix of dimension nxp}
+\item{X}{a numerical matrix containing the \code{p} variables in the model.}
 
-\item{Y}{the output numerical vector of size n}
+\item{Y}{a numerical response vector.}
 
-\item{method}{a method chosen among \code{"linreg"}, \code{"sir"},
-\code{"rf"}, \code{"pcr"},  \code{"plsr"} or  \code{"ridge"}}
+\item{method}{a regression method
+(\code{"linreg"}, \code{"sir"}, \code{"rf"}, \code{"pcr"}, \code{"plsr"}, \code{"ridge"}).}
 
-\item{nperm}{the number of ramdom permutations of the values of the input
-variables.}
+\item{nperm}{the number of random perturbations to perform the importance of the covariates (VI).}
 }
 \value{
-An object with S3 class "varimportance" and with the following components:
-\item{mat_imp}{ a matrix of dimension \code{nperm} times \code{p}. Each colum  gives the  VI values of given variable.}
-
-\item{base_imp}{basic variable importance value i.e. the MSE with the non pertubed data.}
+An object with S3 class "varimportance" and the following components:
+\item{mat_imp}{a matrix of dimension \code{nperm} times \code{p}
+with the VI values for each permuation (in rows) and each covariate (un column).}
+\item{base_imp}{the original mean square error.}
 }
 \description{
-This function  computes for a given method (\code{"linreg"}, \code{"sir"},
-\code{"rf"},  \code{"pcr"},  \code{"plsr"},  \code{"ridge"}) the  importance
-of the input variables. The  importance of a
-variable (VI) is calculated by randomly permuting its values and calculating
- the predicted mean square error (MSE) of the model estimated with the
- perturbed data. Several permutations will give a several VI values for the
- same variable and then a more suitable idea its importance. The VI values
-  can be compared to the so called basic VI value defined as the MSE of the
-   model estimated with the non perturbed data.
-}
-\details{
-The following methods are available: multiple linear regression (\code{linreg}),
-sliced inverse regression associated with kernel regression (\code{sir}),
-random forests (\code{rf}), principal components regression  (\code{pcr}),
-partial least squares regression (\code{plsr}), ridge regression (\code{ridge}).
-If necessary the parameters are tuned as explained in \code{\link{choicemod}}.
-
-If the variable has an effect on the response variable, the random
-permutation of its values will affect the estimation and its measure
-of importance will take a high value.
+This function  computes for a given regression method
+(\code{"linreg"}, \code{"pcr"},  \code{"plsr"},  \code{"ridge"},\code{"sir"},
+\code{"rf"},  ) the  importance
+of the covariates by estimating the response variable with some perturbations
+of the covariates and computing the error due to these perturbations.
+The  variable importance (VI) of a covariate is  the mean square error (MSE) when
+ the values of this variable are randomly permuted. Covariates with higher VI are then more
+ important to predict the response variable. This procedure is replicated several times
+ giving several values of VI for each covariate.  The original MSE (with no perturbation of the data)
+ is also performed for comparison purpose.
 }
 \examples{
 data("simus")
 X <- simus$X
 Y <- simus$Y1
 imp <- varimportance(X, Y, method = "linreg", nperm=15)
+plot(imp)
 imp$mat_imp
 apply(imp$mat_imp,2,mean)
 }
