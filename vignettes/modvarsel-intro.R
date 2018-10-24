@@ -153,6 +153,24 @@ legend("bottomleft", inset = 0.01, legend = c("linreg","sir","rf"), col = c(1:3)
        pch = c("1","2","3"), cex=0.8)
 
 ## ------------------------------------------------------------------------
+# tune the number of components
+m4 <- pls::pcr(Y~., data = as.data.frame(X),
+                        validation="CV", scale=FALSE)
+n <- nrow(X)
+mse_cv <- m4$validation$PRESS/n
+ncomp <- find.cpt(mse_cv)
+
+## ----fig.width=6, fig.height=6, out.width="70%"--------------------------
+
+Ypred <- predict(m4, newdata=X)[ , , ncomp]
+plot(Y,Ypred, main = "pcr")
+abline(0,1)
+
+## ------------------------------------------------------------------------
+newpred4 <- predict(m4, newdata=Xnew)[ , , ncomp]
+newpred4
+
+## ------------------------------------------------------------------------
 data("psbst")
 X <- psbst$dat[,-22] #  matrix of covariates (biomarkers)
 Y <- psbst$dat$WB55a14J # response variable (meat tenderness)

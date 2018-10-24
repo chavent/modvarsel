@@ -1,3 +1,11 @@
+#' Change point detection
+#'
+#' Detects a single change point position (in mean and variance) in a vector of numerical values.
+#'
+#' @param x a vector.
+#' @return the position of the change point.
+#' @export
+
 find.cpt <- function(x) {
   x <- as.vector(x)
   if (length(x) >= 4) {

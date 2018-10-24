@@ -1,11 +1,12 @@
 Package: modvarsel
-Version: 0.0.1
+Version: 0.0.2
 Title: Implements a computational methodology for model and variables selection
 Description: This package implements a methodology to choose among several regression methods the best one to predict a numerical response variable and select simultaneously the most interesting covariates. 
 Authors@R: c(
     person("Marie", "Chavent", ,"Marie.Chavent@u-bordeaux.fr", c("aut", "cre")),
     person("Jerome", "Sarraco", ,"jerome.saracco@ensc.fr", "aut"),
-    person("Marie-Pierre", "Ellies", ,"marie-pierre.ellies@agro-bordeaux.fr", "aut")
+    person("Marie-Pierre", "Ellies", ,"marie-pierre.ellies@agro-bordeaux.fr", "aut"),
+    person("Alexandre", "Conanec", ,"alexandre.conanec@agro-bordeaux.fr", "aut")
     )
 Depends:
     R (>= 3.1)
