@@ -161,7 +161,6 @@ mse_cv <- m4$validation$PRESS/n
 ncomp <- find.cpt(mse_cv)
 
 ## ----fig.width=6, fig.height=6, out.width="70%"--------------------------
-
 Ypred <- predict(m4, newdata=X)[ , , ncomp]
 plot(Y,Ypred, main = "pcr")
 abline(0,1)
@@ -169,6 +168,38 @@ abline(0,1)
 ## ------------------------------------------------------------------------
 newpred4 <- predict(m4, newdata=Xnew)[ , , ncomp]
 newpred4
+
+## ------------------------------------------------------------------------
+# tune the number of PLS components
+m5 <- pls::plsr(Y~., data = as.data.frame(X),
+                        validation="CV", scale=FALSE)
+n <- nrow(X)
+mse_cv <- m5$validation$PRESS/n
+ncomp <- find.cpt(mse_cv)
+
+## ----fig.width=6, fig.height=6, out.width="70%"--------------------------
+Ypred <- predict(m5, newdata=X)[ , , ncomp]
+plot(Y,Ypred, main = "plsr")
+abline(0,1)
+
+## ------------------------------------------------------------------------
+newpred5 <- predict(m4, newdata=Xnew)[ , , ncomp]
+newpred5
+
+## ------------------------------------------------------------------------
+# tune the regularization parameter
+m6 <- glmnet::cv.glmnet(X, Y,
+        family = "gaussian", alpha=0, standardize = FALSE,
+        nfolds = 10, grouped=FALSE)
+
+## ----fig.width=6, fig.height=6, out.width="70%"--------------------------
+Ypred <- predict(m6, X, s = "lambda.min")
+plot(Y,Ypred, main = "ridge")
+abline(0,1)
+
+## ------------------------------------------------------------------------
+newpred5 <- predict(m6, Xnew,  s = "lambda.min")
+newpred5
 
 ## ------------------------------------------------------------------------
 data("psbst")

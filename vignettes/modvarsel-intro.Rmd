@@ -348,10 +348,8 @@ newpred2
 The nonparametric model is estimated with random regression forests. The number of variables randomly sampled as candidates at each split is tuned with respect to Out-of-Baf error estimate.
 
 ```{r}
-#tune mtry
-bestmtry <-randomForest::tuneRF(X, Y, trace = FALSE, plot  =FALSE)
 #build the forest
-m3 <- randomForest::randomForest(X, Y, mtry = bestmtry)
+m3 <- randomForest::randomForest(X, Y)
 ```
 
 #### Plot of the true values versus the predictions
