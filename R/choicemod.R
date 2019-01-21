@@ -137,7 +137,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "linreg",
                            nperm=nperm)
-      selvar <- select.varimportance(imp, cutoff = TRUE,
+      selvar <- select.varimportance(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
@@ -160,7 +160,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "sir",
                            nperm=nperm)
-      selvar <- select.varimportance(imp, cutoff = TRUE,
+      selvar <- select.varimportance(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
@@ -206,7 +206,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "rf",
         nperm=nperm)
-      selvar <- select(imp, cutoff = TRUE,
+      selvar <- select(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
@@ -234,7 +234,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "pcr",
                            nperm=nperm)
-      selvar <- select.varimportance(imp, cutoff = TRUE,
+      selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
@@ -267,7 +267,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "plsr",
                            nperm=nperm)
-      selvar <- select.varimportance(imp, cutoff = TRUE,
+      selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
@@ -303,7 +303,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "ridge",
                            nperm=nperm)
-      selvar <- select.varimportance(imp, cutoff = TRUE,
+      selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]

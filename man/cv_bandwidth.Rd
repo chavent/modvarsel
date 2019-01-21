@@ -4,8 +4,8 @@
 \alias{cv_bandwidth}
 \title{Tune bandwidth}
 \usage{
-cv_bandwidth(x, y, hmin = (max(x) - min(x))/20, hmax = (max(x) -
-  min(x))/2, nbh = 25, graph.CV = TRUE)
+cv_bandwidth(x, y, hmin = (max(x) - min(x))/20, hmax = (max(x) - min(x))/2,
+  nbh = 25, graph.CV = TRUE)
 }
 \arguments{
 \item{x}{a vector with the input values}
