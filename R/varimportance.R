@@ -37,7 +37,7 @@
 
 
 
-varimportance <- function(X, Y, method="linreg", nperm=10){
+varimportance <- function(X, Y, method="linreg", nperm=10,parallel=FALSE,numCores=parallel::detectCores()){
 
   if (!(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge")))
     stop("the \"method\" must be linreg, sir of rf",
@@ -46,7 +46,7 @@ varimportance <- function(X, Y, method="linreg", nperm=10){
   X <- as.matrix(X)
   n <- length(Y)
   if (method == "linreg"){
-    res <- varimp_linreg(X, Y, nperm)
+    res <- varimp_linreg(X, Y, nperm,parallel=parallel,numCores=numCores))
   }
   if (method == "sir"){
     res <- varimp_sir(X, Y, nperm)
