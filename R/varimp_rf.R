@@ -1,7 +1,7 @@
 ######################
 # Random Forest
 ######################
-varimp_rf <- function(X, Y, nrep=10,ntree=300	,parallel=FALSE,myCluster=NULL){
+varimp_rf <- function(X, Y, nrep=10,ntree=300	,parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())){
   Y <- as.vector(Y)
   # RF on the initial dataset
   rf <- randomForest::randomForest(x=X,y=Y,ntree=ntree)
