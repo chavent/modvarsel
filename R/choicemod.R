@@ -228,7 +228,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #Ypred <- stats::predict(model,newdata = Xtest,  type = "response")
 
       # mse_rf_c[i] <- mean((Ytest-Ypred)^2)
-      mse_rf_c[i] <- imp$base_mse
+      mse_rf_c[i] <- imp$base_imp 
     }
     #========
     # PCR
