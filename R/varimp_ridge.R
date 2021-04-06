@@ -1,4 +1,4 @@
-varimp_ridge <- function(X, Y, nrep=10){
+varimp_ridge <- function(X, Y, nrep=10,parallel=TRUE,numCores=parallel::detectCores()){
   X <- as.matrix(X)
 
   #ridge linear regression on the initial dataset
@@ -12,9 +12,9 @@ varimp_ridge <- function(X, Y, nrep=10){
   n <- nrow(X)
   mat_mse <- matrix(0,nrow = nrep,ncol = p)
   colnames(mat_mse) <- colnames(X)
-
+  if (!parallel){
   for (r in 1:nrep) {
-    cat("Replication ", r," on ", nrep, fill = TRUE)
+    # cat("Replication ", r," on ", nrep, fill = TRUE)
     for (j in 1:p){
       Xperm <- X
       Xperm[,j] <- Xperm[sample(1:n),j]
@@ -26,5 +26,19 @@ varimp_ridge <- function(X, Y, nrep=10){
 
     }
   }
+    }
+  if (parallel){
+    for (j in 1:p){
+      mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
+        Xperm <- X
+      Xperm[,j] <- Xperm[sample(1:n),j]
+
+      cvfit <- glmnet::cv.glmnet(Xperm, Y, family = "gaussian", alpha=0,
+             standardize = FALSE, nfolds = 10, grouped=FALSE)
+      Ypred <- stats::predict(cvfit,X, s = "lambda.min")
+      mean((Y-Ypred)^2)
+        }
+      }
+    }
   list(mat_mse = mat_mse,base_mse = base_mse)
 }
