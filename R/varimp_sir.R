@@ -65,8 +65,8 @@ varimp_sir <- function(X, Y, nrep=10,
           x.points = indice_ord)$y
 	     mean((Yord-Yesti)^2)
         }
-	    	  stopCluster(myCluster)
-      }	    
+      }	 
+  stopCluster(myCluster)
     }
 
   list(mat_mse=mat_mse, base_mse  =base_mse)
