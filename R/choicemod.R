@@ -87,8 +87,6 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       stop("\"nbsel\" must be a positive integer
         between 1 and p", call. = FALSE)
   
-  if(parallel & myCluster != NULL){
-    stop("you have to create a cluster prior to parallelizaion", call.=FALSE)}
   X <- as.matrix(X)
   n <- nrow(X)
   n_train <- round(prop_train*n, digits = 0)
