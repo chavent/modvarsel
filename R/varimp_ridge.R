@@ -1,4 +1,5 @@
-varimp_ridge <- function(X, Y, nrep=10	,parallel=FALSE,myCluster=NULL){
+varimp_ridge <- function(X, Y, nrep=10	,parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())
+                        ){
   X <- as.matrix(X)
 
   #ridge linear regression on the initial dataset
