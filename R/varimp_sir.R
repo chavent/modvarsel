@@ -62,7 +62,7 @@ varimp_sir <- function(X, Y, nrep=10,
         Yesti <- stats::ksmooth(indice, Y, kernel = "normal",
           bandwidth = hopt,
           x.points = indice_ord)$y
-	      meanmean((Yord-Yesti)^2)
+	     mean((Yord-Yesti)^2)
         }
       }
     }
