@@ -71,7 +71,7 @@
 
 choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
                       prop_train = 0.8, nperm = 50,
-                      cutoff=TRUE, nbsel=NULL){
+                      cutoff=TRUE, nbsel=NULL, parallel=TRUE, numCores=parallel::detectCores())){
   if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge"))))
     stop("The argument \"method\" allows \"linreg\", \"sir\", \"rf\", \"pcr\", \"plsr\", \"ridge\"",
       call. = FALSE)
@@ -136,7 +136,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     if ("linreg" %in% method){
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "linreg",
-                           nperm=nperm)
+                           nperm=nperm,
+                          parallel=parallel,numCores=numCores)
       selvar <- select.varimportance(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -159,7 +160,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     if ("sir" %in% method){
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "sir",
-                           nperm=nperm)
+                           nperm=nperm,
+                          parallel=parallel,numCores=numCores)
       selvar <- select.varimportance(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -205,7 +207,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       ntree <- 300
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "rf",
-        nperm=nperm)
+        nperm=nperm,
+                          parallel=parallel,numCores=numCores)
       selvar <- select(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -233,7 +236,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     if ("pcr" %in% method){
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "pcr",
-                           nperm=nperm)
+                           nperm=nperm,
+                          parallel=parallel,numCores=numCores)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -266,7 +270,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     if ("plsr" %in% method){
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "plsr",
-                           nperm=nperm)
+                           nperm=nperm,
+                          parallel=parallel,numCores=numCores)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -302,7 +307,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
 
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "ridge",
-                           nperm=nperm)
+                           nperm=nperm,
+                          parallel=parallel,numCores=numCores)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
