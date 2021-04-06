@@ -49,19 +49,19 @@ varimportance <- function(X, Y, method="linreg", nperm=10,ntree=300,parallel=FAL
     res <- varimp_linreg(X, Y, nperm,parallel,numCores)
   }
   if (method == "sir"){
-    res <- varimp_sir(X, Y, nperm)
+    res <- varimp_sir(X, Y, nperm,parallel,numCores))
   }
   if (method == "rf"){
     res <- varimp_rf(X, Y, nperm,ntree,parallel,numCores)
   }
   if (method == "pcr"){
-    res <- varimp_pcr(X, Y, nperm)
+    res <- varimp_pcr(X, Y, nperm,parallel,numCores))
   }
   if (method == "plsr"){
-    res <- varimp_plsr(X, Y, nperm)
+    res <- varimp_plsr(X, Y, nperm,parallel,numCores))
   }
   if (method == "ridge"){
-    res <- varimp_ridge(X, Y, nperm)
+    res <- varimp_ridge(X, Y, nperm,parallel,numCores))
   }
   #mat_r2 <- 1-res$mat_mse/as.numeric(var(Y)*(n-1)/n)
   #base_r2 <- 1- res$base_mse/as.numeric(var(Y)*(n-1)/n)
