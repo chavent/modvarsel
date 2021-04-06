@@ -71,7 +71,7 @@
 
 choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
                       prop_train = 0.8, nperm = 50,
-                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=TRUE, numCores=parallel::detectCores()){
+                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=TRUE, myCluster=NULL){
   if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge"))))
     stop("The argument \"method\" allows \"linreg\", \"sir\", \"rf\", \"pcr\", \"plsr\", \"ridge\"",
       call. = FALSE)
@@ -87,7 +87,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       stop("\"nbsel\" must be a positive integer
         between 1 and p", call. = FALSE)
   
-  if(parallel){doParallel::registerDoParallel(numCores)}
+  if(parallel & myCluster != NULL){
+    stop("you have to create a cluster prior to parallelizaion", call.=FALSE)}
   X <- as.matrix(X)
   n <- nrow(X)
   n_train <- round(prop_train*n, digits = 0)
@@ -138,7 +139,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "linreg",
                            nperm=nperm,
-                          parallel=parallel,numCores=numCores)
+                          parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -162,7 +163,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "sir",
                            nperm=nperm,
-                          parallel=parallel,numCores=numCores)
+                          parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -208,7 +209,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "rf",
         nperm=nperm,ntree=ntree,
-                          parallel=parallel,numCores=numCores)
+                          parallel=parallel,myCluster=myCluster)
       selvar <- select(imp, cutoff = cutoff,
         nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -236,7 +237,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "pcr",
                            nperm=nperm,
-                          parallel=parallel,numCores=numCores)
+                          parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -270,7 +271,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "plsr",
                            nperm=nperm,
-                          parallel=parallel,numCores=numCores)
+                          parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
@@ -307,7 +308,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "ridge",
                            nperm=nperm,
-                          parallel=parallel,numCores=numCores)
+                          parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
