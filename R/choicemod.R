@@ -223,12 +223,11 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       varsel_rf[[i]] <- selvar$var
 
       #with all available variables
-      #model <- randomForest::randomForest(x = Xtrain,
-      #  y = Ytrain, ntree = ntree)
-      #Ypred <- stats::predict(model,newdata = Xtest,  type = "response")
+      model <- randomForest::randomForest(x = Xtrain,
+      y = Ytrain, ntree = ntree)
+      Ypred <- stats::predict(model,newdata = Xtest,  type = "response")
 
-      # mse_rf_c[i] <- mean((Ytest-Ypred)^2)
-      mse_rf_c[i] <- imp$base_imp 
+      mse_rf_c[i] <- mean((Ytest-Ypred)^2)
     }
     #========
     # PCR
