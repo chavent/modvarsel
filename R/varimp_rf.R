@@ -35,6 +35,7 @@ varimp_rf <- function(X, Y, nrep=10,ntree=300	,parallel=FALSE,myCluster=parallel
       mean((Y-Ypred)^2)
       }
   }  
+  parallel::stopCluster(myCluster)
   }
   list(mat_mse=mat_mse,base_mse=base_mse)
 }
