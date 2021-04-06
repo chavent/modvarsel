@@ -87,7 +87,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
         !(all.equal(nbsel, as.integer(nbsel))))
       stop("\"nbsel\" must be a positive integer
         between 1 and p", call. = FALSE)
-  
+  if (!parallel){myCluster=0}
+
   X <- as.matrix(X)
   n <- nrow(X)
   n_train <- round(prop_train*n, digits = 0)
