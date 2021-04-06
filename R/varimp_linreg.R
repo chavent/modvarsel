@@ -1,7 +1,7 @@
 ######################
 # Linear regression
 ######################
-varimp_linreg <- function(X, Y, nrep=10,parallel=FALSE,numCores=parallel::detectCores()){
+varimp_linreg <- function(X, Y, nrep=10,parallel=TRUE,numCores=parallel::detectCores()){
 
   base_mse <- mean((stats::lm(Y~as.matrix(X))$residuals)^2)
 
