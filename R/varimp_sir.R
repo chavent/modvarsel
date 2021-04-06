@@ -49,7 +49,7 @@ if(parallel & myCluster != NULL){
       }
     }
   }else if (parallel){
-    doParallel::registerDoParallel(numCores)
+    doParallel::registerDoParallel(myCluster)
     for (j in 1:p){
       mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
         Xperm <- X
@@ -68,7 +68,9 @@ if(parallel & myCluster != NULL){
           x.points = indice_ord)$y
 	     mean((Yord-Yesti)^2)
         }
-      }
+      }	    
+	  stopCluster(myCluster)
+
     }
 
   list(mat_mse=mat_mse, base_mse  =base_mse)
