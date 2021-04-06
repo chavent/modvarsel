@@ -41,7 +41,6 @@ varimp_ridge <- function(X, Y, nrep=10	,parallel=FALSE,myCluster=parallel::makeC
       mean((Y-Ypred)^2)
         }
       }
-    stopCluster(myCluster)
     }
   list(mat_mse = mat_mse,base_mse = base_mse)
 }
