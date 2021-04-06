@@ -71,7 +71,7 @@
 
 choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
                       prop_train = 0.8, nperm = 50,
-                      cutoff=TRUE, nbsel=NULL, parallel=TRUE, numCores=parallel::detectCores()){
+                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=TRUE, numCores=parallel::detectCores()){
   if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge"))))
     stop("The argument \"method\" allows \"linreg\", \"sir\", \"rf\", \"pcr\", \"plsr\", \"ridge\"",
       call. = FALSE)
@@ -207,7 +207,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       ntree <- 300
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "rf",
-        nperm=nperm,
+        nperm=nperm,ntree=ntree,
                           parallel=parallel,numCores=numCores)
       selvar <- select(imp, cutoff = cutoff,
         nbsel = nbsel)
