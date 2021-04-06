@@ -64,7 +64,7 @@
 #'  tuned as follows: for each possible number of components, the root mean square error (RMSE) is calculated
 #'  via 5-fold cross validation  and the number of components is selected by detecting
 #'  a change point position (in mean and variance). The parameter \code{mtry} for random forests
-#'  regression is not tuned and is fixed to p/3. The number of trees is not tuned and is fixed to \code{ntree=300}.
+#'  regression is not tuned and is fixed to p/3. The number of trees is not tuned and is fixed to \code{ntree=300} by default.
 #'
 #' @export
 
