@@ -1,7 +1,7 @@
 ######################
 # PLSR
 ######################
-varimp_plsr <- function(X, Y, nrep=10,parallel=FALSE,myCluster=NULL
+varimp_plsr <- function(X, Y, nrep=10,parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())
                       ){
 
   n <- nrow(X)
