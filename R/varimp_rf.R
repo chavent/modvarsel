@@ -25,7 +25,7 @@ varimp_rf <- function(X, Y, nrep=10,ntree=300,parallel=FALSE,numCores=parallel::
   }
   }
   else if (parallel){
-  
+  	doParallel::registerDoParallel(numCores)
   for (j in 1:p){
     mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
       Xperm <- X
