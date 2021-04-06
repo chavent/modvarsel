@@ -3,7 +3,7 @@
 #tester que Y est bien un vecteur
 
 varimp_sir <- function(X, Y, nrep=10,
-                        parallel=TRUE,numCores=parallel::detectCores()
+                        parallel=FALSE,numCores=parallel::detectCores()
                       ){
   X <- as.matrix(X)
   #SIR on the initial dataset and tuning of the bandwidth
