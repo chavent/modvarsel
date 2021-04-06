@@ -71,7 +71,8 @@
 
 choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
                       prop_train = 0.8, nperm = 50,
-                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=TRUE, myCluster=NULL){
+                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=TRUE, myCluster=parallel::makeCluster(parallel::detectCores())
+                     ){
   if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge"))))
     stop("The argument \"method\" allows \"linreg\", \"sir\", \"rf\", \"pcr\", \"plsr\", \"ridge\"",
       call. = FALSE)
