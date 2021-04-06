@@ -37,12 +37,14 @@
 
 
 
-varimportance <- function(X, Y, method="linreg", nperm=10,ntree=300,parallel=FALSE,numCores=parallel::detectCores()){
+varimportance <- function(X, Y, method="linreg", nperm=10,ntree=300,parallel=FALSE,myCluster=NULL){
 
   if (!(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge")))
     stop("the \"method\" must be linreg, sir of rf",
          call. = FALSE)
-
+  if(parallel & myCluster != NULL){
+    stop("you have to create a cluster prior to parallelizaion", call.=FALSE)}
+  
   X <- as.matrix(X)
   n <- length(Y)
   if (method == "linreg"){
