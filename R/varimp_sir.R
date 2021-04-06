@@ -2,7 +2,7 @@
 #question : ne faudrait-il pas tuner la fenêtre en dehors de la boucle des réplications comme en RF ?
 #tester que Y est bien un vecteur
 
-varimp_sir <- function(X, Y, nrep=10,
+varimp_sir <- function(X, Y, nrep=10
                         ,parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())
                       ){
   X <- as.matrix(X)
