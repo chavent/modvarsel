@@ -3,8 +3,11 @@
 #tester que Y est bien un vecteur
 
 varimp_sir <- function(X, Y, nrep=10,
-                        parallel=FALSE,numCores=parallel::detectCores()
+                        ,parallel=FALSE,myCluster=NULL
                       ){
+if(parallel & myCluster != NULL){
+    stop("you have to create a cluster prior to parallelizaion", call.=FALSE)}
+	
   X <- as.matrix(X)
   #SIR on the initial dataset and tuning of the bandwidth
   beta <- edrGraphicalTools::edr(Y, X, H = 10, K = 1,
