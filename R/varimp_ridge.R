@@ -28,6 +28,7 @@ varimp_ridge <- function(X, Y, nrep=10,parallel=TRUE,numCores=parallel::detectCo
   }
     }
   if (parallel){
+      doParallel::registerDoParallel(numCores)
     for (j in 1:p){
       mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
         Xperm <- X
