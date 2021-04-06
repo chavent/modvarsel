@@ -46,7 +46,7 @@ varimportance <- function(X, Y, method="linreg", nperm=10,parallel=FALSE,numCore
   X <- as.matrix(X)
   n <- length(Y)
   if (method == "linreg"){
-    res <- varimp_linreg(X, Y, nperm,parallel=parallel,numCores=numCores))
+    res <- varimp_linreg(X, Y, nperm,parallel=parallel,numCores=numCores)
   }
   if (method == "sir"){
     res <- varimp_sir(X, Y, nperm)
