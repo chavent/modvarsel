@@ -1,7 +1,4 @@
 varimp_ridge <- function(X, Y, nrep=10	,parallel=FALSE,myCluster=NULL){
-    if(parallel & myCluster != NULL){
-    stop("you have to create a cluster prior to parallelizaion", call.=FALSE)}
-	
   X <- as.matrix(X)
 
   #ridge linear regression on the initial dataset
@@ -42,8 +39,8 @@ varimp_ridge <- function(X, Y, nrep=10	,parallel=FALSE,myCluster=NULL){
       Ypred <- stats::predict(cvfit,X, s = "lambda.min")
       mean((Y-Ypred)^2)
         }
-      }
     stopCluster(myCluster)
+      }
     }
   list(mat_mse = mat_mse,base_mse = base_mse)
 }
