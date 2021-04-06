@@ -2,7 +2,7 @@
 # PLSR
 ######################
 varimp_plsr <- function(X, Y, nrep=10,
-                        parallel=TRUE,numCores=parallel::detectCores()
+                        parallel=FALSE,numCores=parallel::detectCores()
                       ){
 
   n <- nrow(X)
