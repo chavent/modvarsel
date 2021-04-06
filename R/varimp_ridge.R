@@ -1,4 +1,4 @@
-varimp_ridge <- function(X, Y, nrep=10,parallel=FALSE,numCores=parallel::detectCores()){
+varimp_ridge <- function(X, Y, nrep=10	,parallel=FALSE,myCluster=NULL){
   X <- as.matrix(X)
 
   #ridge linear regression on the initial dataset
@@ -28,7 +28,7 @@ varimp_ridge <- function(X, Y, nrep=10,parallel=FALSE,numCores=parallel::detectC
   }
     }
   else if (parallel){
-      doParallel::registerDoParallel(numCores)
+      doParallel::registerDoParallel(myCluster)
     for (j in 1:p){
       mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
         Xperm <- X
@@ -40,6 +40,7 @@ varimp_ridge <- function(X, Y, nrep=10,parallel=FALSE,numCores=parallel::detectC
       mean((Y-Ypred)^2)
         }
       }
+    stopCluster(myCluster)
     }
   list(mat_mse = mat_mse,base_mse = base_mse)
 }

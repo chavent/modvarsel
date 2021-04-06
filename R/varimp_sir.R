@@ -3,7 +3,7 @@
 #tester que Y est bien un vecteur
 
 varimp_sir <- function(X, Y, nrep=10,
-                        parallel=FALSE,numCores=parallel::detectCores()
+                        ,parallel=FALSE,myCluster=NULL
                       ){
   X <- as.matrix(X)
   #SIR on the initial dataset and tuning of the bandwidth
@@ -46,7 +46,7 @@ varimp_sir <- function(X, Y, nrep=10,
       }
     }
   }else if (parallel){
-    doParallel::registerDoParallel(numCores)
+    doParallel::registerDoParallel(myCluster)
     for (j in 1:p){
       mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
         Xperm <- X
@@ -65,7 +65,8 @@ varimp_sir <- function(X, Y, nrep=10,
           x.points = indice_ord)$y
 	     mean((Yord-Yesti)^2)
         }
-      }
+      }	 
+  stopCluster(myCluster)
     }
 
   list(mat_mse=mat_mse, base_mse  =base_mse)

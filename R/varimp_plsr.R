@@ -1,8 +1,7 @@
 ######################
 # PLSR
 ######################
-varimp_plsr <- function(X, Y, nrep=10,
-                        parallel=FALSE,numCores=parallel::detectCores()
+varimp_plsr <- function(X, Y, nrep=10,parallel=FALSE,myCluster=NULL
                       ){
 
   n <- nrow(X)
@@ -38,7 +37,7 @@ varimp_plsr <- function(X, Y, nrep=10,
       }
    }
   else if (parallel){
-	  doParallel::registerDoParallel(numCores)
+	      doParallel::registerDoParallel(myCluster)
     for (j in 1:p){
       mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
 	        Xperm <- X
@@ -50,8 +49,10 @@ varimp_plsr <- function(X, Y, nrep=10,
           Ypred <- as.vector(stats::predict(model, data.frame(Xperm),
             ncomp=ncomp))
 	         mean((Y - Ypred)^2)
-        }
+        }	    
       }
+	 stopCluster(myCluster)
+
     }
   list(mat_mse = mat_mse,base_mse = base_mse)
 }
