@@ -71,7 +71,7 @@
 
 choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
                       prop_train = 0.8, nperm = 50,
-                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=TRUE, myCluster=parallel::makeCluster(parallel::detectCores())
+                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=FALSE, myCluster=parallel::makeCluster(parallel::detectCores())
                      ){
   if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge"))))
     stop("The argument \"method\" allows \"linreg\", \"sir\", \"rf\", \"pcr\", \"plsr\", \"ridge\"",
@@ -329,6 +329,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     }
 
   }
+  if (parallel){
+    parallel::stopCluster(myCluster)}
   mse <- data.frame(linreg = mse_linreg,
     sir = mse_sir, rf = mse_rf, pcr = mse_pcr, plsr = mse_plsr, ridge = mse_ridge)
   mse <- mse[,(c("linreg","sir","rf", "pcr", "plsr", "ridge") %in% method),
@@ -357,7 +359,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
   colnames(sizemod) <- method
   for (i in 1:length(varsel))
     sizemod[,i] <- sapply(varsel[[i]], length)
-
+  
   structure(
     list(mse = mse,
          mse_all  = mse_all,
