@@ -39,8 +39,8 @@ varimp_ridge <- function(X, Y, nrep=10	,parallel=FALSE,myCluster=NULL){
       Ypred <- stats::predict(cvfit,X, s = "lambda.min")
       mean((Y-Ypred)^2)
         }
-    stopCluster(myCluster)
       }
+    stopCluster(myCluster)
     }
   list(mat_mse = mat_mse,base_mse = base_mse)
 }
