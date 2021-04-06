@@ -71,7 +71,7 @@
 
 choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
                       prop_train = 0.8, nperm = 50,
-                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=FALSE, myCluster=parallel::makeCluster(parallel::detectCores())
+                      cutoff=TRUE, nbsel=NULL,ntree=300, parallel=FALSE, nb_core=parallel::detectCores()
                      ){
   if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge"))))
     stop("The argument \"method\" allows \"linreg\", \"sir\", \"rf\", \"pcr\", \"plsr\", \"ridge\"",
@@ -136,6 +136,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     #========
     if ("linreg" %in% method){
       #with variables selection
+      if (parallel){myCluster=parallel::makeCluster(nb_core)}
       imp <- varimportance(Xtrain, Ytrain, method = "linreg",
                            nperm=nperm,
                           parallel=parallel,myCluster=myCluster)
@@ -160,6 +161,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     #========
     if ("sir" %in% method){
       #with variables selection
+      if (parallel){myCluster=parallel::makeCluster(nb_core)}
       imp <- varimportance(Xtrain, Ytrain, method = "sir",
                            nperm=nperm,
                           parallel=parallel,myCluster=myCluster)
@@ -205,6 +207,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     # Random Forests
     #================
     if ("rf" %in% method){
+      if (parallel){myCluster=parallel::makeCluster(nb_core)}
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "rf",
         nperm=nperm,ntree=ntree,
@@ -233,7 +236,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     # PCR
     #========
     if ("pcr" %in% method){
-      #with variables selection
+       if (parallel){myCluster=parallel::makeCluster(nb_core)}
+     #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "pcr",
                            nperm=nperm,
                           parallel=parallel,myCluster=myCluster)
@@ -267,7 +271,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     # PLSR
     #========
     if ("plsr" %in% method){
-      #with variables selection
+       if (parallel){myCluster=parallel::makeCluster(nb_core)}
+     #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "plsr",
                            nperm=nperm,
                           parallel=parallel,myCluster=myCluster)
@@ -303,7 +308,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     # RIDGE
     #========
     if ("ridge" %in% method){
-
+      if (parallel){myCluster=parallel::makeCluster(nb_core)}
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "ridge",
                            nperm=nperm,
@@ -329,8 +334,6 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     }
 
   }
-  if (parallel){
-    parallel::stopCluster(myCluster)}
   mse <- data.frame(linreg = mse_linreg,
     sir = mse_sir, rf = mse_rf, pcr = mse_pcr, plsr = mse_plsr, ridge = mse_ridge)
   mse <- mse[,(c("linreg","sir","rf", "pcr", "plsr", "ridge") %in% method),
