@@ -29,7 +29,7 @@ varimp_linreg <- function(X, Y, nrep=10,parallel=FALSE,numCores=parallel::detect
   else if (parallel){
   
   for (j in 1:p){
-    mat_mse[,j]<-foreach::foreach(r in 1:nrep, .combine = 'c') %dopar% {
+    mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
       Xperm <- X
       Xperm[,j] <- Xperm[sample(1:n),j]
       res <- stats::lm(Y~as.matrix(Xperm))
