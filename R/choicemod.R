@@ -216,7 +216,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
 
       model <- randomForest::randomForest(x = Xtrain_sel,
         y = Ytrain, ntree = ntree)
-      Ypred2 <-stats::predict(model,newdata = Xtest_sel,
+      Ypred <-stats::predict(model,newdata = Xtest_sel,
         type = "response")
 
       mse_rf[i] <- mean((Ytest-Ypred)^2)
