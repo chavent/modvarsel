@@ -2,7 +2,7 @@
 # PCR
 ######################
 varimp_pcr <- function(X, Y, nrep=10,
-                       parallel=FALSE,myCluster=NULL
+                       parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())
                       ){
   n <- nrow(X)
   model <- pls::pcr(Y~., data = data.frame(X),
