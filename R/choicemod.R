@@ -205,7 +205,6 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     # Random Forests
     #================
     if ("rf" %in% method){
-      ntree <- 300
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "rf",
         nperm=nperm,ntree=ntree,
