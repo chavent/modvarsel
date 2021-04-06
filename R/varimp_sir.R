@@ -66,7 +66,6 @@ varimp_sir <- function(X, Y, nrep=10
 	     mean((Yord-Yesti)^2)
         }
       }	 
-  stopCluster(myCluster)
     }
 
   list(mat_mse=mat_mse, base_mse  =base_mse)
