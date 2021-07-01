@@ -310,8 +310,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
 
-
-      model <- ordinal::clm(Ytrain~., data = data.frame(Xtrain_sel))
+      YtrainF<-as.factor(Ytrain)
+      model <- ordinal::clm(YtrainF~., data = data.frame(Xtrain_sel))
       Yprob<-stats::predict(model,newdata=data.frame(Xtest_sel),type="prob")$fit
       Yvalue<-as.numeric(colnames(Yprob))
       Ypred<-Y*0
@@ -320,7 +320,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       varsel_clm[[i]] <- selvar$var
 
       #with all available variables
-      model <- ordinal::clm(Ytrain~., data = data.frame(Xtrain))
+      model <- ordinal::clm(YtrainF~., data = data.frame(Xtrain))
       Yprob<-stats::predict(model,newdata=data.frame(Xtest),type="prob")$fit
       Yvalue<-as.numeric(colnames(Yprob))
       Ypred<-Y*0
