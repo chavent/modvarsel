@@ -2,7 +2,7 @@ varimp_clm <- function(X, Y, nrep=10,parallel=FALSE,myCluster=parallel::makeClus
 ){
   
   Yf<-as.factor(Y)
-  model<-ordinal::clm(Yf~.,data=X)
+  model<-ordinal::clm(Yf~.,data=data.frame(X))
   Yprob<-stats::predict(model,newdata=data.frame(X),type="prob")$fit
   Yvalue<-as.numeric(colnames(Yprob))
   Ypred<-Y*0
@@ -21,7 +21,7 @@ varimp_clm <- function(X, Y, nrep=10,parallel=FALSE,myCluster=parallel::makeClus
       for (j in 1:p){
         Xperm <- X
         Xperm[,j] <- Xperm[sample(1:n),j]
-        res <- ordinal::clm(Yf~.,data=Xperm)
+        res <- ordinal::clm(Yf~.,data=data.frame(Xperm))
         Yprob<-stats::predict(model,newdata=data.frame(Xperm),type="prob")$fit
         Yvalue<-as.numeric(colnames(Yprob))
         Ypred<-Y*0
