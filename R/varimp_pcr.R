@@ -3,58 +3,40 @@
 ######################
 varimp_pcr <- function(X, Y, nrep=10,
                        parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())
-                      ){
+){
   n <- nrow(X)
-  model <- pls::pcr(Y~., data = data.frame(X),
-    validation = "LOO", scale=FALSE)
-  # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
-  rmsep <- sqrt(model$validation$PRESS/n)
-  ncomp <- find.cpt(rmsep)
-
-  Ypred <- as.vector(stats::predict(model, data.frame(X),
-    ncomp = ncomp))
+  model <- pls::pcr(Y~as.matrix(X))
+  Ypred <- as.vector(stats::predict(model, data.frame(X)))
   base_mse <- mean((Y - Ypred)^2)
-
+  
   # Repetitions of VI measures for each variable
   p <- ncol(X)
   n <- nrow(X)
   mat_mse <- matrix(0,nrow = nrep,ncol = p)
   colnames(mat_mse) <- colnames(X)
   if (!parallel){
-  for (r in 1:nrep) {
-    for (j in 1:p){
-      Xperm <- X
-      Xperm[,j] <- Xperm[sample(1:n),j]
-
-      model <- pls::pcr(Y~., data = data.frame(Xperm),
-        validation = "CV", scale=FALSE)
-      # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
-      rmsep <- sqrt(model$validation$PRESS/n)
-      ncomp <- find.cpt(rmsep)
-      Ypred <- as.vector(stats::predict(model, data.frame(Xperm),
-        ncomp=ncomp))
-      mat_mse[r,j] <- mean((Y - Ypred)^2)
+    for (r in 1:nrep) {
+      for (j in 1:p){
+        Xperm <- X
+        Xperm[,j] <- Xperm[sample(1:n),j]
+        model <- pls::pcr(Y~., data = data.frame(Xperm))
+        Ypred <- as.vector(stats::predict(model, data.frame(Xperm)))
+        mat_mse[r,j] <- mean((Y - Ypred)^2)
+      }
     }
-  }
   }
   else if (parallel){
-	doParallel::registerDoParallel(myCluster)
+    doParallel::registerDoParallel(myCluster)
     for (j in 1:p){
       mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
-	  Xperm <- X
-      Xperm[,j] <- Xperm[sample(1:n),j]
-
-      model <- pls::pcr(Y~., data = data.frame(Xperm),
-        validation = "CV", scale=FALSE)
-      # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
-      rmsep <- sqrt(model$validation$PRESS/n)
-      ncomp <- find.cpt(rmsep)
-      Ypred <- as.vector(stats::predict(model, data.frame(Xperm),
-        ncomp=ncomp))
+        Xperm <- X
+        Xperm[,j] <- Xperm[sample(1:n),j]
+        model <- pls::pcr(Y~., data = data.frame(Xperm))
+        Ypred <- as.vector(stats::predict(model, data.frame(Xperm)))
         mean((Y - Ypred)^2)
-        }
       }
-stopCluster(myCluster)
     }
+    stopCluster(myCluster)
+  }
   list(mat_mse = mat_mse,base_mse = base_mse)
 }
