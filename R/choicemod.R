@@ -118,6 +118,9 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
   varsel_ridge <- list()
   mse_ridge_c <- rep(0,N)
 
+  mse_clm<-rep(0,N)
+  varsel_clm<-list()
+  mse_clm_c<-rep(0,N)
 
   #--replications of train/test sets
   for (i in 1:N){
@@ -293,6 +296,40 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
 
       mse_plsr_c[i] <- mean((Ytest - Ypred)^2)
     }
+     #========
+    # CLM
+    #========
+    if ("clm" %in% method){
+       if (parallel){myCluster=parallel::makeCluster(nb_core)}
+     #with variables selection
+      imp <- varimportance(Xtrain, Ytrain, method = "clm",
+                           nperm=nperm,
+                          parallel=parallel,myCluster=myCluster)
+      selvar <- select.varimportance(imp, cutoff = cutoff,
+                                     nbsel = nbsel)
+      Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
+      Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
+
+
+      model <- ordinal::clm(Ytrain~., data = data.frame(Xtrain_sel))
+      Yprob<-stats::predict(model,newdata=data.frame(Xtest_sel),type="prob")$fit
+      Yvalue<-as.numeric(colnames(Yprob))
+      Ypred<-Y*0
+      for (i in 1:length(Yvalue)){Ypred<-Ypred+Yprob[,i]*Yvalue[i]}
+      mse_clm[i] <- mean((Ytest - Ypred)^2)
+      varsel_clm[[i]] <- selvar$var
+
+      #with all available variables
+      model <- ordinal::clm(Ytrain~., data = data.frame(Xtrain))
+      Yprob<-stats::predict(model,newdata=data.frame(Xtest),type="prob")$fit
+      Yvalue<-as.numeric(colnames(Yprob))
+      Ypred<-Y*0
+      for (i in 1:length(Yvalue)){Ypred<-Ypred+Yprob[,i]*Yvalue[i]}
+      mse_clm[i] <- mean((Ytest - Ypred)^2)
+      varsel_clm[[i]] <- selvar$var
+      mse_clm_c[i] <- mean((Ytest - Ypred)^2)
+    }
+    
     #========
     # RIDGE
     #========
@@ -323,6 +360,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     }
 
   }
+  
   mse <- data.frame(linreg = mse_linreg,
     sir = mse_sir, rf = mse_rf, pcr = mse_pcr, plsr = mse_plsr, ridge = mse_ridge)
   mse <- mse[,(c("linreg","sir","rf", "pcr", "plsr", "ridge") %in% method),
