@@ -314,8 +314,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       model <- ordinal::clm(YtrainF~., data = data.frame(Xtrain_sel))
       Yprob<-stats::predict(model,newdata=data.frame(Xtest_sel),type="prob")$fit
       Yvalue<-as.numeric(colnames(Yprob))
-      Ypred<-Y*0
-      for (i in 1:length(Yvalue)){Ypred<-Ypred+Yprob[,i]*Yvalue[i]}
+      Ypred<-as.vector(Ytest)*0
+      for (j in 1:length(Yvalue)){Ypred<-Ypred+as.vector(Yprob[,j])*as.vector(Yvalue[j])}
       mse_clm[i] <- mean((Ytest - Ypred)^2)
       varsel_clm[[i]] <- selvar$var
       
@@ -323,10 +323,8 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       model <- ordinal::clm(YtrainF~., data = data.frame(Xtrain))
       Yprob<-stats::predict(model,newdata=data.frame(Xtest),type="prob")$fit
       Yvalue<-as.numeric(colnames(Yprob))
-      Ypred<-Y*0
-      for (i in 1:length(Yvalue)){Ypred<-Ypred+Yprob[,i]*Yvalue[i]}
-      mse_clm[i] <- mean((Ytest - Ypred)^2)
-      varsel_clm[[i]] <- selvar$var
+      Ypred<-Ytest*0
+      for (j in 1:length(Yvalue)){Ypred<-Ypred+Yprob[,j]*Yvalue[j]}
       mse_clm_c[i] <- mean((Ytest - Ypred)^2)
     }
     
