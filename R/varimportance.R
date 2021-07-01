@@ -39,7 +39,7 @@
 
 varimportance <- function(X, Y, method="linreg", nperm=10,ntree=300,parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())){
 
-  if (!(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge")))
+  if (!(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge", "clm")))
     stop("the \"method\" must be linreg, sir of rf",
          call. = FALSE)
 
