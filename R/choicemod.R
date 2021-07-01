@@ -72,61 +72,61 @@
 choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
                       prop_train = 0.8, nperm = 50,
                       cutoff=TRUE, nbsel=NULL,ntree=300, parallel=FALSE, nb_core=parallel::detectCores()
-                     ){
+){
   if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge","clm"))))
     stop("The argument \"method\" allows \"linreg\", \"sir\", \"rf\", \"pcr\", \"plsr\", \"ridge\"",
-      call. = FALSE)
+         call. = FALSE)
   if (!(cutoff %in% c(TRUE, FALSE)))
     stop("\"cutoff\" must be either \"TRUE\" or \"FALSE\"",
-      call. = FALSE)
+         call. = FALSE)
   if ((cutoff == FALSE) && (is.null(nbsel)))
     stop("If \"cutoff=FALSE\" the value \"nbsel\"
       must specified", call. = FALSE)
   if (!is.null(nbsel))
     if ( !(nbsel>0) ||  !(nbsel <= ncol(X)) ||
-        !(all.equal(nbsel, as.integer(nbsel))))
+         !(all.equal(nbsel, as.integer(nbsel))))
       stop("\"nbsel\" must be a positive integer
         between 1 and p", call. = FALSE)
   if (!parallel){myCluster=0}
-
+  
   X <- as.matrix(X)
   n <- nrow(X)
   n_train <- round(prop_train*n, digits = 0)
   n_test <- n-n_train
-
+  
   mse_linreg <- rep(0,N)
   varsel_linreg <- list()
   mse_linreg_c <- rep(0,N)
-
+  
   mse_sir <- rep(0,N)
   varsel_sir <- list()
   mse_sir_c <- rep(0,N)
-
+  
   mse_rf <- rep(0,N)
   varsel_rf <- list()
   mse_rf_c <- rep(0,N)
-
+  
   mse_pcr <- rep(0,N)
   varsel_pcr <- list()
   mse_pcr_c <- rep(0,N)
-
+  
   mse_plsr <- rep(0,N)
   varsel_plsr <- list()
   mse_plsr_c <- rep(0,N)
-
+  
   mse_ridge <- rep(0,N)
   varsel_ridge <- list()
   mse_ridge_c <- rep(0,N)
-
+  
   mse_clm<-rep(0,N)
   varsel_clm<-list()
   mse_clm_c<-rep(0,N)
-
+  
   #--replications of train/test sets
   for (i in 1:N){
-
+    
     cat("Replication ", i," on ", N, fill = TRUE)
-
+    
     train <- sample(1:n, size = n_train, replace = FALSE)
     Xtrain <- X[train,]
     Ytrain <- Y[train]
@@ -141,21 +141,21 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       if (parallel){myCluster=parallel::makeCluster(nb_core)}
       imp <- varimportance(Xtrain, Ytrain, method = "linreg",
                            nperm=nperm,
-                          parallel=parallel,myCluster=myCluster)
+                           parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
-        nbsel = nbsel)
+                                     nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
       model <- stats::lm(Ytrain~.,data = data.frame(Xtrain_sel))
       Ypred <- stats::predict(model,newdata = data.frame(Xtest_sel))
-
+      
       mse_linreg[i] <- mean((Ytest-Ypred)^2)
       varsel_linreg[[i]] <- selvar$var
-
+      
       #with all available variables
       model <- stats::lm(Ytrain~.,data = data.frame(Xtrain))
       Ypred <- stats::predict(model,newdata = data.frame(Xtest))
-
+      
       mse_linreg_c[i] <- mean((Ytest-Ypred)^2)
     }
     #========
@@ -166,14 +166,14 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       if (parallel){myCluster=parallel::makeCluster(nb_core)}
       imp <- varimportance(Xtrain, Ytrain, method = "sir",
                            nperm=nperm,
-                          parallel=parallel,myCluster=myCluster)
+                           parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
-        nbsel = nbsel)
+                                     nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
       beta <- edrGraphicalTools::edr(Ytrain, Xtrain_sel,
-        H = 10, K = 1, method = "SIR-I")$matEDR[, 1,
-          drop = FALSE]
+                                     H = 10, K = 1, method = "SIR-I")$matEDR[, 1,
+                                                                             drop = FALSE]
       indice <- Xtrain_sel%*%beta
       hopt <- cv_bandwidth(indice, Ytrain,graph.CV=FALSE)$hopt
       indicetest <- Xtest_sel%*%beta
@@ -182,16 +182,16 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       Ytest_ord <- matord[,1]
       indicetest_ord <- matord[,2]
       Ypred <- stats::ksmooth(indice, Ytrain, kernel = "normal",
-        bandwidth = hopt,
-        x.points = indicetest_ord)$y
-
+                              bandwidth = hopt,
+                              x.points = indicetest_ord)$y
+      
       mse_sir[i] <- mean((Ytest_ord-Ypred)^2)
       varsel_sir[[i]] <- selvar$var
-
+      
       #with all available variables
       beta <- edrGraphicalTools::edr(Ytrain, Xtrain,
-        H = 10, K = 1, method = "SIR-I")$matEDR[, 1,
-          drop = FALSE]
+                                     H = 10, K = 1, method = "SIR-I")$matEDR[, 1,
+                                                                             drop = FALSE]
       indice <- Xtrain%*%beta
       hopt <- cv_bandwidth(indice, Ytrain,graph.CV=FALSE)$hopt
       indicetest <- Xtest%*%beta
@@ -200,9 +200,9 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       Ytest_ord <- matord[,1]
       indicetest_ord <- matord[,2]
       Ypred <- stats::ksmooth(indice, Ytrain, kernel = "normal",
-        bandwidth = hopt,
-        x.points = indicetest_ord)$y
-
+                              bandwidth = hopt,
+                              x.points = indicetest_ord)$y
+      
       mse_sir_c[i] <- mean((Ytest_ord-Ypred)^2)
     }
     #================
@@ -212,104 +212,104 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       if (parallel){myCluster=parallel::makeCluster(nb_core)}
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "rf",
-        nperm=nperm,ntree=ntree,
-                          parallel=parallel,myCluster=myCluster)
+                           nperm=nperm,ntree=ntree,
+                           parallel=parallel,myCluster=myCluster)
       selvar <- select(imp, cutoff = cutoff,
-        nbsel = nbsel)
+                       nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
-
+      
       model <- randomForest::randomForest(x = Xtrain_sel,
-        y = Ytrain, ntree = ntree)
+                                          y = Ytrain, ntree = ntree)
       Ypred <-stats::predict(model,newdata = Xtest_sel,
-        type = "response")
-
+                             type = "response")
+      
       mse_rf[i] <- mean((Ytest-Ypred)^2)
       varsel_rf[[i]] <- selvar$var
-
+      
       #with all available variables
       model <- randomForest::randomForest(x = Xtrain,
-      y = Ytrain, ntree = ntree)
+                                          y = Ytrain, ntree = ntree)
       Ypred <- stats::predict(model,newdata = Xtest,  type = "response")
-
+      
       mse_rf_c[i] <- mean((Ytest-Ypred)^2)
     }
     #========
     # PCR
     #========
     if ("pcr" %in% method){
-       if (parallel){myCluster=parallel::makeCluster(nb_core)}
-     #with variables selection
+      if (parallel){myCluster=parallel::makeCluster(nb_core)}
+      #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "pcr",
                            nperm=nperm,
-                          parallel=parallel,myCluster=myCluster)
+                           parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
-
+      
       model <- pls::pcr(Ytrain~., data = data.frame(Xtrain_sel))
       Ypred <- as.vector(stats::predict(model, data.frame(Xtest_sel)))
       mse_pcr[i] <- mean((Ytest - Ypred)^2)
       varsel_pcr[[i]] <- selvar$var
-
+      
       #with all available variables
       model <- pls::pcr(Ytrain~., data = as.data.frame(Xtrain))
       Ypred <-  as.vector(stats::predict(model, data.frame(Xtest)))
-
+      
       mse_pcr_c[i] <- mean((Ytest - Ypred)^2)
     }
     #========
     # PLSR
     #========
     if ("plsr" %in% method){
-       if (parallel){myCluster=parallel::makeCluster(nb_core)}
-     #with variables selection
+      if (parallel){myCluster=parallel::makeCluster(nb_core)}
+      #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "plsr",
                            nperm=nperm,
-                          parallel=parallel,myCluster=myCluster)
+                           parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
-
-
+      
+      
       model <- pls::plsr(Ytrain~., data = data.frame(Xtrain_sel),
-                        validation = "CV", scale=TRUE)
+                         validation = "CV", scale=TRUE)
       # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
       rmsep <- sqrt(model$validation$PRESS/n_train)
       ncomp <- find.cpt(rmsep)
       Ypred <- as.vector(stats::predict(model, data.frame(Xtest_sel),
-        ncomp=ncomp))
-
+                                        ncomp=ncomp))
+      
       mse_plsr[i] <- mean((Ytest - Ypred)^2)
       varsel_plsr[[i]] <- selvar$var
-
+      
       #with all available variables
       model <- pls::plsr(Ytrain~., data = as.data.frame(Xtrain),
-                        validation="CV", scale=TRUE)
+                         validation="CV", scale=TRUE)
       # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
       rmsep <- sqrt(model$validation$PRESS/n_train)
       ncomp <- find.cpt(rmsep)
       Ypred <-  as.vector(stats::predict(model, data.frame(Xtest),
-        ncomp=ncomp))
-
+                                         ncomp=ncomp))
+      
       mse_plsr_c[i] <- mean((Ytest - Ypred)^2)
     }
-     #========
+    #========
     # CLM
     #========
     if ("clm" %in% method){
-       if (parallel){myCluster=parallel::makeCluster(nb_core)}
-     #with variables selection
+      if (parallel){myCluster=parallel::makeCluster(nb_core)}
+      #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "clm",
                            nperm=nperm,
-                          parallel=parallel,myCluster=myCluster)
+                           parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
-
+      
       YtrainF<-as.factor(Ytrain)
       model <- ordinal::clm(YtrainF~., data = data.frame(Xtrain_sel))
       Yprob<-stats::predict(model,newdata=data.frame(Xtest_sel),type="prob")$fit
@@ -318,7 +318,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       for (i in 1:length(Yvalue)){Ypred<-Ypred+Yprob[,i]*Yvalue[i]}
       mse_clm[i] <- mean((Ytest - Ypred)^2)
       varsel_clm[[i]] <- selvar$var
-
+      
       #with all available variables
       model <- ordinal::clm(YtrainF~., data = data.frame(Xtrain))
       Yprob<-stats::predict(model,newdata=data.frame(Xtest),type="prob")$fit
@@ -338,43 +338,43 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       #with variables selection
       imp <- varimportance(Xtrain, Ytrain, method = "ridge",
                            nperm=nperm,
-                          parallel=parallel,myCluster=myCluster)
+                           parallel=parallel,myCluster=myCluster)
       selvar <- select.varimportance(imp, cutoff = cutoff,
                                      nbsel = nbsel)
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
-
+      
       model <- glmnet::cv.glmnet(Xtrain_sel, Ytrain,
-        family = "gaussian", alpha=0, standardize = FALSE,
-        nfolds = 10, grouped=FALSE)
+                                 family = "gaussian", alpha=0, standardize = FALSE,
+                                 nfolds = 10, grouped=FALSE)
       Ypred <- stats::predict(model, Xtest_sel, s = "lambda.min")
       mse_ridge[i] <- mean((Ytest-Ypred)^2)
       varsel_ridge[[i]] <- selvar$var
-
+      
       #with all available variables
       model <- glmnet::cv.glmnet(Xtrain, Ytrain,
-        family = "gaussian", alpha=0, standardize = FALSE,
-        nfolds = 10, grouped=FALSE)
+                                 family = "gaussian", alpha=0, standardize = FALSE,
+                                 nfolds = 10, grouped=FALSE)
       Ypred <- stats::predict(model, Xtest, s = "lambda.min")
       mse_ridge_c[i]<- mean((Ytest-Ypred)^2)
     }
-
+    
   }
   
   mse <- data.frame(linreg = mse_linreg,
-    sir = mse_sir, rf = mse_rf, pcr = mse_pcr, plsr = mse_plsr, ridge = mse_ridge)
-  mse <- mse[,(c("linreg","sir","rf", "pcr", "plsr", "ridge") %in% method),
-    drop=FALSE]
-
+                    sir = mse_sir, rf = mse_rf, pcr = mse_pcr, plsr = mse_plsr, ridge = mse_ridge)
+  mse <- mse[,(c("linreg","sir","rf", "pcr", "plsr", "ridge","clm") %in% method),
+             drop=FALSE]
+  
   mse_all <- data.frame(linreg_all = mse_linreg_c,
-    sir_all = mse_sir_c, rf_all = mse_rf_c, pcr_all = mse_pcr_c, plsr_all = mse_plsr_c, ridge_all = mse_ridge_c)
-  mse_all <- mse_all[,(c("linreg","sir","rf", "pcr", "plsr", "ridge") %in%
-      method),drop=FALSE]
-
+                        sir_all = mse_sir_c, rf_all = mse_rf_c, pcr_all = mse_pcr_c, plsr_all = mse_plsr_c, ridge_all = mse_ridge_c)
+  mse_all <- mse_all[,(c("linreg","sir","rf", "pcr", "plsr", "ridge","clm") %in%
+                         method),drop=FALSE]
+  
   varsel <- list(linreg = varsel_linreg, sir = varsel_sir,
-    rf = varsel_rf, pcr = varsel_pcr, plsr = varsel_plsr, ridge = varsel_ridge)
-  varsel <- varsel[match(method,c("linreg", "sir", "rf", "pcr", "plsr", "ridge"))]
-
+                 rf = varsel_rf, pcr = varsel_pcr, plsr = varsel_plsr, ridge = varsel_ridge)
+  varsel <- varsel[match(method,c("linreg", "sir", "rf", "pcr", "plsr", "ridge","clm"))]
+  
   #proportion of selection of each variable
   p <- ncol(X)
   pvarsel <- matrix(NA, nrow = p, ncol = length(method))
@@ -383,7 +383,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
   for (i in 1:length(varsel))
     for (j in 1:p)
       pvarsel[j,i] <- sum(unlist(lapply(varsel[[i]],function(x){colnames(X)[j] %in% x})))/N
-
+  
   #number of variables selected by the method at each replication
   sizemod <- matrix(NA, nrow = N, ncol = length(method))
   colnames(sizemod) <- method
