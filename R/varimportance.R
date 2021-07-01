@@ -63,6 +63,9 @@ varimportance <- function(X, Y, method="linreg", nperm=10,ntree=300,parallel=FAL
   if (method == "ridge"){
     res <- varimp_ridge(X, Y, nperm,parallel,myCluster)
   }
+  if (method == "clm"){
+    res <- varimp_clm(X,Y, nperm, parallel,myCluster)
+  }
   #mat_r2 <- 1-res$mat_mse/as.numeric(var(Y)*(n-1)/n)
   #base_r2 <- 1- res$base_mse/as.numeric(var(Y)*(n-1)/n)
   structure(
