@@ -362,17 +362,17 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
   }
   
   mse <- data.frame(linreg = mse_linreg,
-                    sir = mse_sir, rf = mse_rf, pcr = mse_pcr, plsr = mse_plsr, ridge = mse_ridge)
+                    sir = mse_sir, rf = mse_rf, pcr = mse_pcr, plsr = mse_plsr, ridge = mse_ridge,clm=mse_clm)
   mse <- mse[,(c("linreg","sir","rf", "pcr", "plsr", "ridge","clm") %in% method),
              drop=FALSE]
   
   mse_all <- data.frame(linreg_all = mse_linreg_c,
-                        sir_all = mse_sir_c, rf_all = mse_rf_c, pcr_all = mse_pcr_c, plsr_all = mse_plsr_c, ridge_all = mse_ridge_c)
+                        sir_all = mse_sir_c, rf_all = mse_rf_c, pcr_all = mse_pcr_c, plsr_all = mse_plsr_c, ridge_all = mse_ridge_c,clm_all=mse_clm_c)
   mse_all <- mse_all[,(c("linreg","sir","rf", "pcr", "plsr", "ridge","clm") %in%
                          method),drop=FALSE]
   
   varsel <- list(linreg = varsel_linreg, sir = varsel_sir,
-                 rf = varsel_rf, pcr = varsel_pcr, plsr = varsel_plsr, ridge = varsel_ridge)
+                 rf = varsel_rf, pcr = varsel_pcr, plsr = varsel_plsr, ridge = varsel_ridge,clm=varsel_clm)
   varsel <- varsel[match(method,c("linreg", "sir", "rf", "pcr", "plsr", "ridge","clm"))]
   
   #proportion of selection of each variable
