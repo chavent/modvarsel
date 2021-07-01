@@ -129,9 +129,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
     Ytrain <- Y[train]
     Xtest <- X[-train,]
     Ytest <- Y[-train]
-    Y.pred.RegLin <- rep(0,n_test)
-    Y.pred.SIR <- rep(0,n_test)
-    Y.pred.RF <- rep(0,n_test)
+    
     #========
     # RegLin
     #========
