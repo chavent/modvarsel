@@ -73,7 +73,7 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
                       prop_train = 0.8, nperm = 50,
                       cutoff=TRUE, nbsel=NULL,ntree=300, parallel=FALSE, nb_core=parallel::detectCores()
                      ){
-  if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge"))))
+  if (!(all(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge","clm"))))
     stop("The argument \"method\" allows \"linreg\", \"sir\", \"rf\", \"pcr\", \"plsr\", \"ridge\"",
       call. = FALSE)
   if (!(cutoff %in% c(TRUE, FALSE)))
@@ -247,24 +247,14 @@ choicemod <- function(X, Y, method = c("linreg","sir","rf"), N = 20,
       Xtest_sel <- Xtest[,selvar$indices, drop=FALSE]
       Xtrain_sel <- Xtrain[,selvar$indices, drop=FALSE]
 
-      model <- pls::pcr(Ytrain~., data = data.frame(Xtrain_sel),
-        validation = "CV", scale=FALSE)
-      # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
-      rmsep <- sqrt(model$validation$PRESS/n_train)
-      ncomp <- find.cpt(rmsep)
-      Ypred <- as.vector(stats::predict(model, data.frame(Xtest_sel),
-        ncomp=ncomp))
+      model <- pls::pcr(Ytrain~., data = data.frame(Xtrain_sel))
+      Ypred <- as.vector(stats::predict(model, data.frame(Xtest_sel)))
       mse_pcr[i] <- mean((Ytest - Ypred)^2)
       varsel_pcr[[i]] <- selvar$var
 
       #with all available variables
-      model <- pls::pcr(Ytrain~., data = as.data.frame(Xtrain),
-                        validation="CV", scale=FALSE)
-      # rmsep <- pls::RMSEP(model, intercept = FALSE)$val["CV",,]
-      rmsep <- sqrt(model$validation$PRESS/n_train)
-      ncomp <- find.cpt(rmsep)
-      Ypred <-  as.vector(stats::predict(model, data.frame(Xtest),
-        ncomp=ncomp))
+      model <- pls::pcr(Ytrain~., data = as.data.frame(Xtrain))
+      Ypred <-  as.vector(stats::predict(model, data.frame(Xtest)))
 
       mse_pcr_c[i] <- mean((Ytest - Ypred)^2)
     }
