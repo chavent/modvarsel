@@ -1,7 +1,8 @@
 ######################
 # Linear regression
 ######################
-varimp_linreg <- function(X, Y, nrep=10){
+varimp_linreg <- function(X, Y, nrep=10,parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())
+                         ){
 
   base_mse <- mean((stats::lm(Y~as.matrix(X))$residuals)^2)
 
@@ -11,6 +12,7 @@ varimp_linreg <- function(X, Y, nrep=10){
   mat_mse <- matrix(0,nrow=nrep,ncol=p)
   colnames(mat_mse) <- colnames(X)
 
+  if (!parallel){
   for (r in 1:nrep) {
     for (j in 1:p){
       Xperm <- X
@@ -23,6 +25,19 @@ varimp_linreg <- function(X, Y, nrep=10){
 
       #mat_mse[r,j] <-  mean((Y-predict(res,Xperm))^2)
     }
+  }
+  }
+  else if (parallel){
+    doParallel::registerDoParallel(myCluster)
+    for (j in 1:p){
+    mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
+      Xperm <- X
+      Xperm[,j] <- Xperm[sample(1:n),j]
+      res <- stats::lm(Y~as.matrix(Xperm))
+      mean(res$residuals^2)
+      }
+  }  
+    stopCluster(myCluster)
   }
   list(mat_mse=mat_mse,base_mse=base_mse)
 }

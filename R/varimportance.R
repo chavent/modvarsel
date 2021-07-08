@@ -37,31 +37,34 @@
 
 
 
-varimportance <- function(X, Y, method="linreg", nperm=10){
+varimportance <- function(X, Y, method="linreg", nperm=10,ntree=300,parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())){
 
-  if (!(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge")))
+  if (!(method %in% c("linreg", "sir", "rf", "pcr", "plsr", "ridge", "clm")))
     stop("the \"method\" must be linreg, sir of rf",
          call. = FALSE)
 
   X <- as.matrix(X)
   n <- length(Y)
   if (method == "linreg"){
-    res <- varimp_linreg(X, Y, nperm)
+    res <- varimp_linreg(X, Y, nperm,parallel,myCluster)
   }
   if (method == "sir"){
-    res <- varimp_sir(X, Y, nperm)
+    res <- varimp_sir(X, Y, nperm,parallel,myCluster)
   }
   if (method == "rf"){
-    res <- varimp_rf(X, Y, nperm)
+    res <- varimp_rf(X, Y, nperm,ntree,parallel,myCluster)
   }
   if (method == "pcr"){
-    res <- varimp_pcr(X, Y, nperm)
+    res <- varimp_pcr(X, Y, nperm,parallel,myCluster)
   }
   if (method == "plsr"){
-    res <- varimp_plsr(X, Y, nperm)
+    res <- varimp_plsr(X, Y, nperm,parallel,myCluster)
   }
   if (method == "ridge"){
-    res <- varimp_ridge(X, Y, nperm)
+    res <- varimp_ridge(X, Y, nperm,parallel,myCluster)
+  }
+  if (method == "clm"){
+    res <- varimp_clm(X,Y, nperm, parallel,myCluster)
   }
   #mat_r2 <- 1-res$mat_mse/as.numeric(var(Y)*(n-1)/n)
   #base_r2 <- 1- res$base_mse/as.numeric(var(Y)*(n-1)/n)

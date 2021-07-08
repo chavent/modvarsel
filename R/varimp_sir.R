@@ -2,7 +2,9 @@
 #question : ne faudrait-il pas tuner la fenêtre en dehors de la boucle des réplications comme en RF ?
 #tester que Y est bien un vecteur
 
-varimp_sir <- function(X, Y, nrep=10){
+varimp_sir <- function(X, Y, nrep=10
+                        ,parallel=FALSE,myCluster=parallel::makeCluster(parallel::detectCores())
+                      ){
   X <- as.matrix(X)
   #SIR on the initial dataset and tuning of the bandwidth
   beta <- edrGraphicalTools::edr(Y, X, H = 10, K = 1,
@@ -23,25 +25,49 @@ varimp_sir <- function(X, Y, nrep=10){
   mat_mse <- matrix(0,nrow=nrep,ncol=p)
   colnames(mat_mse) <- colnames(X)
 
-  for (r in 1:nrep) {
-    for (j in 1:p){
-      Xperm <- X
-      Xperm[,j] <- Xperm[sample(1:n),j]
-      beta <- edrGraphicalTools::edr(Y,
-        Xperm, H = 10, K = 1,
-        method = "SIR-I")$matEDR[,1,drop=FALSE]
-      indice <- Xperm%*%beta
-      #hopt <- cv_bandwidth(indice,Y,graph.CV=FALSE)$hopt
-      mat <- cbind(Y,indice)
-      matord <- mat[order(mat[,2]),]
-      Yord <- matord[,1]
-      indice_ord <- matord[,2]
-      Yesti <- stats::ksmooth(indice, Y, kernel = "normal",
-        bandwidth = hopt,
-        x.points = indice_ord)$y
-      mat_mse[r,j] <- mean((Yord-Yesti)^2)
+  if (!parallel){
+    for (r in 1:nrep) {
+      for (j in 1:p){
+        Xperm <- X
+        Xperm[,j] <- Xperm[sample(1:n),j]
+        beta <- edrGraphicalTools::edr(Y,
+          Xperm, H = 10, K = 1,
+          method = "SIR-I")$matEDR[,1,drop=FALSE]
+        indice <- Xperm%*%beta
+        #hopt <- cv_bandwidth(indice,Y,graph.CV=FALSE)$hopt
+        mat <- cbind(Y,indice)
+        matord <- mat[order(mat[,2]),]
+        Yord <- matord[,1]
+        indice_ord <- matord[,2]
+        Yesti <- stats::ksmooth(indice, Y, kernel = "normal",
+          bandwidth = hopt,
+          x.points = indice_ord)$y
+        mat_mse[r,j] <- mean((Yord-Yesti)^2)
+      }
     }
-  }
+  }else if (parallel){
+    doParallel::registerDoParallel(myCluster)
+    for (j in 1:p){
+      mat_mse[,j]<-foreach::foreach(r =c(1:nrep), .combine = 'c') %dopar% {
+        Xperm <- X
+        Xperm[,j] <- Xperm[sample(1:n),j]
+        beta <- edrGraphicalTools::edr(Y,
+          Xperm, H = 10, K = 1,
+          method = "SIR-I")$matEDR[,1,drop=FALSE]
+        indice <- Xperm%*%beta
+        #hopt <- cv_bandwidth(indice,Y,graph.CV=FALSE)$hopt
+        mat <- cbind(Y,indice)
+        matord <- mat[order(mat[,2]),]
+        Yord <- matord[,1]
+        indice_ord <- matord[,2]
+        Yesti <- stats::ksmooth(indice, Y, kernel = "normal",
+          bandwidth = hopt,
+          x.points = indice_ord)$y
+	     mean((Yord-Yesti)^2)
+        }
+      }	 
+  parallel::stopCluster(myCluster)
+    }
 
   list(mat_mse=mat_mse, base_mse  =base_mse)
 }
